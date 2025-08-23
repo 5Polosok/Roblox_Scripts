@@ -1,5 +1,3 @@
-getgenv().redeemcodes = true
-getgenv().claimlevel = true
 if game.PlaceId ~= 16146832113 then return end
 local delay = 0.25
 local RedeemCodes = function() 
@@ -38,4 +36,4 @@ end)
 
 -- getgenv().redeemcodes = true
 -- getgenv().claimlevel = true
--- loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/Anime%20Vanguards/ClaimRewards"))()
+-- loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/Anime%20Vanguards/AutoClaim"))()

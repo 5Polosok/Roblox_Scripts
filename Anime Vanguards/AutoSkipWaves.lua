@@ -1,0 +1,15 @@
+-- local slider = game:GetService("Players").LocalPlayer.PlayerGui.Windows.Settings.Holder.Main.ScrollingFrame.Gameplay.AutoSkipWaves.Slider
+-- local uigrad = slider.UIGradient
+-- local btn = slider.button
+-- local color = uigrad.Color
+-- if math.abs(color.R - 0) < 0.01 and 
+--     math.abs(color.G - 0.717645) < 0.01 and 
+--     math.abs(color.B - 0) < 0.01 then
+--     print("Цвет совпадает, не включаем авто-скип")
+--     return -- Цвет совпадает, не выполняем действие
+-- end
+-- local args = {
+--     "Toggle",
+--     "AutoSkipWaves"
+-- }
+-- game:GetService("ReplicatedStorage"):WaitForChild("Networking"):WaitForChild("Settings"):WaitForChild("SettingsEvent"):FireServer(unpack(args))

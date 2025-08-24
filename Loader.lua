@@ -3,7 +3,7 @@ if game.PlaceId == 16946008847 then
     --AutoJoiner Statements
     getgenv().TpToEventStatement = false
     getgenv().AmountOfAccounts = 4
-    --ClaimAll
+    --ClaimAll Statements
     getgenv().BuyRRS = true
     getgenv().CollectDaily = true
     getgenv().SpinWheel = true

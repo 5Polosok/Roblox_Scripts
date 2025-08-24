@@ -16,7 +16,7 @@ local Loader = function()
     end
 
     --Anime Vanguards
-    if gane.PlaceId == 16146832113 then
+    if game.PlaceId == 16146832113 then
         --AutoClaimer statements
         getgenv().redeemcodes = true
         getgenv().claimlevel = true

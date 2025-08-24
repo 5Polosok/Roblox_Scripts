@@ -1,0 +1,9 @@
+task.spawn(function()
+    getgenv().redeemcodes = true
+    getgenv().claimlevel = true
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/Anime%20Vanguards/AutoClaim.lua"))()
+end)
+
+task.spawn(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/Anime%20Vanguards/AutoSkipWaves.lua"))()
+end)

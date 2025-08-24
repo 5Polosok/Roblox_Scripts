@@ -1,7 +1,7 @@
 if game.PlaceId ~= 16146832113 then return end
 local delay = 0.25
 local RedeemCodes = function() 
-    local codes = {"THEONE", "SUMMER", "IAMTHEONEWHODECIDES", "Sasageyo"}
+    local codes = {"UnendingRage", "TheStrongest", "THEONE", "SUMMER", "IAMTHEONEWHODECIDES", "Sasageyo"}
     for _,v in pairs(codes) do
         local args = {
             v

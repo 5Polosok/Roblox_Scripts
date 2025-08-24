@@ -1,7 +1,7 @@
 if game.PlaceId == 17687504411 then
     -- Настройки
     local cooldown = 0.01 -- Задержка между запросами
-    local startLevel = 60 -- Начальный уровень для кодов уровня
+    local startLevel = 100 -- Начальный уровень для кодов уровня
     
     -- Сервисы
     local ReplicatedStorage = game:GetService("ReplicatedStorage")

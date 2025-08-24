@@ -80,7 +80,7 @@ end
 local function redeemLevels()
     if not REDEEM_LEVELS then return end
     
-    for lvl = 60, 0, -5 do
+    for lvl = 100, 0, -5 do
         local args = {
             {Type = "Code", Mode = "Level", Code = lvl}
         }

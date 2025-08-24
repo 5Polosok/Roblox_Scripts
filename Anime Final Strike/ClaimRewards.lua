@@ -1,6 +1,6 @@
 --Redeem codes from table
 local RedeemCodesFunction = function()
-	local localcodes = {"FixedEvent", "mbShutdown","ELFUPRISING", "UPD2", "4LEAFCLOVER", "HARDATWORK", "SaiyanPride","UPD1HALF","FORGOT40KLIKES", "THANKSFOR50KLIKES", "UPDATEONE", "BONIMARU", "MBFORDELAY", "15MVISITS", "100KBLUEAPP", "SORRYFORTHESHUTDOWN", "THANKSFORALLTHESUPPORT", "UPDATEHALF", "TOBITO",  "RELEASE", "THANKSFOR20KLIKES", "THANKSFOR5KLIKES", "SORRY4SHUTDOWN", "15KCCU", "TRAILER", "THANKSFOR20K", "ILUVAFS"}
+	local localcodes = {"30Mil", "FixedEvent", "mbShutdown","ELFUPRISING", "UPD2", "4LEAFCLOVER", "HARDATWORK", "SaiyanPride","UPD1HALF","FORGOT40KLIKES", "THANKSFOR50KLIKES", "UPDATEONE", "BONIMARU", "MBFORDELAY", "15MVISITS", "100KBLUEAPP", "SORRYFORTHESHUTDOWN", "THANKSFORALLTHESUPPORT", "UPDATEHALF", "TOBITO",  "RELEASE", "THANKSFOR20KLIKES", "THANKSFOR5KLIKES", "SORRY4SHUTDOWN", "15KCCU", "TRAILER", "THANKSFOR20K", "ILUVAFS"}
 	if not getgenv().skibidicodes or #getgenv().skibidicodes == 0 then getgenv().skibidicodes = localcodes end
 	for _,v in pairs(getgenv().skibidicodes) do 
 		local args = {

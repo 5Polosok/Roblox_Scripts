@@ -1,4 +1,4 @@
-local requiredfunc = "Spin"
+local requiredfunc = "playAnimation"
 local func
 for _,v in pairs(getgc()) do
     if type(v) == "function" and getinfo(v).name == requiredfunc then
@@ -16,6 +16,7 @@ if func then
             local arg = args[i]
             print(("Argument %d: %s (Type: %s)"):format(i, tostring(arg), type(arg)))
         end
+        
         return hooked(...)
     end)
 else

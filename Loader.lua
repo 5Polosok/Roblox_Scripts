@@ -10,16 +10,21 @@ if game.PlaceId == 16946008847 then
     getgenv().RedeemCodes - true 
     --loadstring
     loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/Anime%20Final%20Strike/AnimeFinalStrikeloader.lua"))()
+end
 
 --Anime Vanguards
-elseif gane.PlaceId == 16146832113 then
+if gane.PlaceId == 16146832113 then
     --AutoClaimer statements
     getgenv().redeemcodes = true
     getgenv().claimlevel = true
+    --loadstring
     loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/Anime%20Vanguards/AVScriptLoader.lua"))()
+end
 
 --ASTDX
-elseif game.PlaceId == 17687504411 then
+if game.PlaceId == 17687504411 then
+    --UseParser statement
     getgenv().UseParser = false
+    --loadstring
     loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/ASTDX/ASTDXLoader.lua"))()
 end

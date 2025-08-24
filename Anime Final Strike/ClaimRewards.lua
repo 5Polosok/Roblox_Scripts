@@ -60,7 +60,7 @@ task.spawn(function()
     if not game:IsLoaded() then
         game.Loaded:Wait()
     end
-    task.wait(3)
+    task.wait(1)
     
     if game:GetService("Players").LocalPlayer then
 		main()

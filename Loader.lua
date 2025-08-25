@@ -1,4 +1,6 @@
 local Loader = function()
+    getgenv().setfpscap = true
+    getgenv().fpsamount = 20
     --Anime Final Strike
     if game.PlaceId == 16946008847 then
         --AutoJoiner Statements

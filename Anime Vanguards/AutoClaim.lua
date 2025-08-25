@@ -11,6 +11,7 @@ local RedeemCodes = function()
     end
 end
 local ClaimLevel = function()
+    
     for lvl=100, 0, -5 do
         local args = {
             "Claim",
@@ -22,8 +23,8 @@ local ClaimLevel = function()
 end
 
 local main = function()
-    if getgenv().redeemcodes then RedeemCodes() end
-    if getgenv().claimlevel then ClaimLevel() end
+    if getgenv().redeemcodes then task.spawn(function() RedeemCodes() end) end
+    if getgenv().claimlevel then task.spawn(function() ClaimLevel() end) end
 end
 task.spawn(function()
     if not game:IsLoaded() then

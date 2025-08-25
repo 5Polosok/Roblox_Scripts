@@ -1,5 +1,5 @@
 if game.PlaceId ~= 16146832113 then return end
-local delay = 0.1
+local delay = 0.15
 local playerLevel = game:GetService("Players").LocalPlayer:GetAttribute("Level")
 local RedeemCodes = function() 
     local codes = {"UnendingRage", "TheStrongest", "THEONE", "SUMMER", "IAMTHEONEWHODECIDES", "Sasageyo"}

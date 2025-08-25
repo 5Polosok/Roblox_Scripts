@@ -1,6 +1,8 @@
 local Loader = function()
+    --setfpcap loadstring
     getgenv().setfpscap = true
     getgenv().fpsamount = 20
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/FEscripts/setfpslimit.lua"))()
     --Anime Final Strike
     if game.PlaceId == 16946008847 then
         --AutoJoiner Statements

@@ -1,7 +1,7 @@
 
-if getgenv().setfpscap then
-    if getgenv().fpsamount ~= nil and tonumber(getgenv().fpsamount) then 
-        setfpscap(getgenv().fpsamount)
+if getgenv().enable_fpscap then
+    if getgenv().fps_amount ~= nil and tonumber(getgenv().fps_amount) then 
+        setfpscap(getgenv().fps_amount)
     else
         setfpscap(20)
     end

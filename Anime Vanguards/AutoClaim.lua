@@ -11,6 +11,7 @@ local RedeemCodes = function()
         task.wait(delay)
     end
 end
+
 local ClaimLevel = function()
     local playerLevel = game:GetService("Players").LocalPlayer:GetAttribute("Level") or 0
     
@@ -53,13 +54,12 @@ local main = function()
     if getgenv().redeemcodes then task.spawn(function() RedeemCodes() end) end
     if getgenv().claimlevel then task.spawn(function() ClaimLevel() end) end
 end
+
 task.spawn(function()
     if not game:IsLoaded() then
         game.Loaded:Wait()
     end
     task.wait(3)
+    
     main()
 end)
--- getgenv().redeemcodes = true
--- getgenv().claimlevel = true
--- loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/Anime%20Vanguards/AutoClaim.lua"))()

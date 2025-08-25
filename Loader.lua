@@ -1,8 +1,8 @@
 local Loader = function()
-    --setfpcap loadstring
-    getgenv().setfpscap = true
-    getgenv().fpsamount = 20
+    getgenv().enable_fpscap = true
+    getgenv().fps_amount = 20
     loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/FEscripts/setfpslimit.lua"))()
+
     --Anime Final Strike
     if game.PlaceId == 16946008847 then
         --AutoJoiner Statements
@@ -45,7 +45,7 @@ task.spawn(function()
     if not game:IsLoaded() then
         game.Loaded:Wait()
     end
-    task.wait(3)
+    task.wait(1)
     
     Loader()
 end)

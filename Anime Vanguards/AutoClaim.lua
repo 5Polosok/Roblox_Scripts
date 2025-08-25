@@ -44,6 +44,7 @@ local ClaimLevel = function()
             lvl 
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Networking"):WaitForChild("Milestones"):WaitForChild("MilestonesEvent"):FireServer(unpack(args))
+        print("Claimed Level: ", lvl)
         task.wait(delay)
     end
 end

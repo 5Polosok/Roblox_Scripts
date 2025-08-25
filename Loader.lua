@@ -1,13 +1,10 @@
 local Loader = function()
-    getgenv().enable_fpscap = true
-    getgenv().fps_amount = 20
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/FEscripts/setfpslimit.lua"))()
-
     --Anime Final Strike
     if game.PlaceId == 16946008847 then
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/FEscripts/FPSBoost.lua"))()
         --AutoJoiner Statements
-        getgenv().TpToEventStatement = false
-        getgenv().AmountOfAccounts = 4
+        getgenv().TpToEventStatement = true
+        getgenv().AmountOfAccounts = 3
         --ClaimAll Statements
         getgenv().BuyRRS = true
         getgenv().CollectDaily = true
@@ -21,6 +18,9 @@ local Loader = function()
 
     --Anime Vanguards
     if game.PlaceId == 16146832113 then
+        getgenv().enable_fpscap = true
+        getgenv().fps_amount = 30
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/FEscripts/setfpslimit.lua"))()
         --AutoClaimer statements
         getgenv().redeemcodes = true
         getgenv().claimlevel = true

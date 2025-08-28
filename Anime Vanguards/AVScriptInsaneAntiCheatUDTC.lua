@@ -9,7 +9,8 @@ getgenv().days_amount = 3
 getgenv().AutoUpgradeEnabled = true
 getgenv().MatchRestartEnabled = true
 
--- 🌐 Discord Webhook URL (замени на свой)
+-- 🌐 Отключить аудио (для FPS и тишины)
+game:GetService("SoundService").SoundsDisabled = true
 
 -- 📍 Новые позиции для расстановки юнитов
 local TARGET_POSITIONS = {
@@ -33,7 +34,7 @@ local function main()
     local placeId = game.PlaceId
     local player = game:GetService("Players").LocalPlayer
 
-    -- ✅ Анти-афк (через VirtualUser)
+    -- ✅ Анти-афк
     local function enableAntiIdle()
         local vu = game:GetService("VirtualUser")
         player.Idled:Connect(function()
@@ -45,102 +46,64 @@ local function main()
     enableAntiIdle()
 
     if placeId == 16146832113 then
-        -- 🌞 РЕЖИМ: Меню (дейлики, батлпасс, квесты, запуск матча)
-        print("🎮 [Меню] Запуск рутины...")
-
+        -- 🌞 Меню: дейлики, батлпасс, запуск
         if not game:IsLoaded() then game.Loaded:Wait() end
-        repeat task.wait() until player:FindFirstChild("PlayerGui")
         repeat task.wait() until player.PlayerGui:FindFirstChild("Windows")
 
-        -- 1. Выбор начального юнита
         pcall(function()
             local networking = game.ReplicatedStorage:WaitForChild("Networking", 10)
-            local selectionEvent = networking:WaitForChild("Units"):WaitForChild("UnitSelectionEvent", 5)
-            selectionEvent:FireServer("Select", "Luffo")
+            networking:WaitForChild("Units"):WaitForChild("UnitSelectionEvent"):FireServer("Select", "Luffo")
             print("✅ Юнит Luffo выбран")
             randomDelay(0.3, 0.7)
         end)
 
-        -- 2. Экипировка первого доступного юнита
         pcall(function()
             local unitsFrame = player.PlayerGui.Windows.Units.Holder.Main.Units
             for _, frame in pairs(unitsFrame:GetChildren()) do
                 if frame:IsA("Frame") and frame.Name ~= "BuyMoreSpace" then
-                    local equipEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("Units"):WaitForChild("EquipEvent", 5)
-                    equipEvent:FireServer("Equip", frame.Name)
+                    game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("Units"):WaitForChild("EquipEvent"):FireServer("Equip", frame.Name)
                     print(`✅ Экипирован: {frame.Name}`)
                     break
                 end
-                randomDelay(0.1, 0.3)
             end
         end)
 
-        -- 3. Получение дейликов
+        -- Дейлики, батлпасс, квесты, запуск матча
         pcall(function()
-            local rewardEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("DailyRewardEvent", 5)
-            if rewardEvent then
-                for _, season in pairs({"Summer", "Spring", "Special"}) do
-                    for day = 1, getgenv().days_amount do
-                        rewardEvent:FireServer("Claim", {season, day})
-                        print(`🎁 Получено: {season} — День {day}`)
-                        randomDelay(0.2, 0.4)
-                    end
+            local rewardEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("DailyRewardEvent")
+            for _, season in pairs({"Summer", "Spring", "Special"}) do
+                for day = 1, getgenv().days_amount do
+                    rewardEvent:FireServer("Claim", {season, day})
                 end
             end
         end)
 
-        -- 4. Батлпасс
         pcall(function()
-            local bpEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("BattlepassEvent", 5)
-            if bpEvent then
-                bpEvent:FireServer("ClaimAll")
-                print("🎖️ Все награды Battlepass получены")
-                randomDelay(0.5, 1.2)
-            end
+            game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("BattlepassEvent"):FireServer("ClaimAll")
         end)
 
-        -- 5. Квесты
         pcall(function()
-            local questEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("Quests"):WaitForChild("ClaimQuest", 5)
-            if questEvent then
-                questEvent:FireServer("ClaimAll")
-                print("📜 Все квесты получены")
-                randomDelay(0.5, 1.0)
-            else
-                warn("❌ ClaimQuest не найден")
-            end
+            game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("Quests"):WaitForChild("ClaimQuest"):FireServer("ClaimAll")
         end)
 
-        -- 6. Создание и запуск матча
         pcall(function()
-            local lobbyEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("LobbyEvent", 5)
-            if lobbyEvent then
-                lobbyEvent:FireServer("AddMatch", {
-                    Difficulty = "Normal",
-                    Act = "Act1",
-                    StageType = "Story",
-                    Stage = "Stage1",
-                    FriendsOnly = true
-                })
-                print("🎮 Матч добавлен: Act1, Normal")
-                randomDelay(0.3, 0.7)
-
-                lobbyEvent:FireServer("StartMatch")
-                print("🚀 Матч запущен!")
-            end
+            local lobbyEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("LobbyEvent")
+            lobbyEvent:FireServer("AddMatch", {
+                Difficulty = "Normal",
+                Act = "Act1",
+                StageType = "Story",
+                Stage = "Stage1",
+                FriendsOnly = true
+            })
+            lobbyEvent:FireServer("StartMatch")
         end)
-
-        print("✅ Меню-режим завершён. Ожидаем переход в боёвку...")
 
     elseif placeId == 16277809958 then
-        -- 🔥 РЕЖИМ: Боёвка (автопрохождение)
-        print("🎮 [Боёвка] Запуск авто-прохождения...")
-
+        -- 🔥 Боёвка
         if not game:IsLoaded() then game.Loaded:Wait() end
-        repeat task.wait() until player.Character
-        repeat task.wait() until player.Character:FindFirstChild("HumanoidRootPart")
+        repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 
-        -- 🧹 Очистка для повышения FPS
+        -- 🧹 Очистка Map
         pcall(function()
             local map = game.Workspace:FindFirstChild("Map")
             if map then
@@ -149,333 +112,165 @@ local function main()
                         pcall(v.Destroy, v)
                     end
                 end
-                print("🧹 Очищен Map (оставлены Assets и Terrain)")
             end
         end)
 
-        task.wait(0.5)
-
-        -- ⏭️ Функция: пропустить волну
+        -- ⏭️ SkipWave
         local function fireSkipWaveEvent()
             pcall(function()
                 local skipEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("SkipWaveEvent", 5)
-                if skipEvent then
-                    skipEvent:FireServer("Skip")
-                    print("⏭️ SkipWaveEvent отправлен — волна пропущена")
-                else
-                    warn("❌ SkipWaveEvent не найден")
-                end
+                if skipEvent then skipEvent:FireServer("Skip") end
             end)
         end
 
-        -- 🧩 ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-
-        -- Проверка, активна ли игра
+        -- 🧩 Вспомогательные функции
         local function isGameActive()
             local hotbar = player.PlayerGui:FindFirstChild("Hotbar")
             local endScreen = player.PlayerGui:FindFirstChild("EndScreen")
-            return hotbar and hotbar.Enabled == true and (not endScreen or not endScreen.Enabled)
+            return hotbar and hotbar.Enabled and not (endScreen and endScreen.Enabled)
         end
 
-        -- Проверка, идёт ли волна
         local function isWaveActive()
             local wave = game.Workspace:FindFirstChild("WaveController")
             return wave and wave:FindFirstChild("CurrentWave") and wave.CurrentWave.Value > 0
         end
 
-        -- Ожидание начала волны
         local function waitForWaveStart()
-            print("⏳ Ожидаем начало волны...")
             while getgenv().MatchRestartEnabled do
-                if isGameActive() and isWaveActive() then
-                    print("🔥 Волна началась!")
-                    break
-                end
+                if isGameActive() and isWaveActive() then break end
                 task.wait(1)
             end
         end
 
-        -- 📊 Получение денег
         local function getPlayerMoney()
-            local yenFrame = player.PlayerGui:FindFirstChild("Hotbar")
-            if not yenFrame then return 0 end
-
-            local text = yenFrame.Main.Yen.Text
-            if not text or text:lower():find("inf") then return math.huge end
-
-            local cleanText = string.gsub(text, "%D", "")
-            local money = tonumber(cleanText) or 0
-            return money
+            local yen = player.PlayerGui:FindFirstChild("Hotbar")
+            if not yen then return 0 end
+            local text = yen.Main.Yen.Text
+            return tonumber(string.gsub(text, "%D", "")) or 0
         end
 
-        -- 🔍 Проверка количества юнитов
         local function getUnitCount()
             local units = game.Workspace:FindFirstChild("Units")
-            if not units then return 0 end
-            return #units:GetChildren()
+            return units and #units:GetChildren() or 0
         end
 
-        -- ✅ ТОЧНАЯ проверка: стоит ли юнит на позиции
-        local function isUnitAtExactPosition(position, tolerance)
+        local function isUnitAtExactPosition(pos, tol)
             local units = game.Workspace:FindFirstChild("Units")
             if not units then return false end
-
             for _, unit in pairs(units:GetChildren()) do
                 local hrp = unit:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local dist = (hrp.Position - position).Magnitude
-                    if dist <= tolerance then
-                        return true, unit
-                    end
+                if hrp and (hrp.Position - pos).Magnitude <= tol then
+                    return true
                 end
             end
-            return false, nil
+            return false
         end
 
-        -- 🚶‍♂️ Движение к позиции
-        local function moveToPosition(targetPosition)
+        local function moveToPosition(pos)
             local char = player.Character
-            if not char then return end
-
-            local humanoid = char:FindFirstChild("Humanoid")
             local hrp = char:FindFirstChild("HumanoidRootPart")
-            if not humanoid or not hrp then return end
-
-            local offset = Vector3.new(
-                math.random(-15, 15) / 10,
-                0,
-                math.random(-15, 15) / 10
-            )
-            local finalPos = targetPosition + offset
-
-            humanoid:MoveTo(finalPos)
-
-            local startTime = tick()
-            repeat task.wait(0.1) until
-                (hrp.Position - finalPos).Magnitude < 5 or
-                tick() - startTime > 3
+            local humanoid = char:FindFirstChild("Humanoid")
+            if not (hrp and humanoid) then return end
+            humanoid:MoveTo(pos + Vector3.new(math.random(-1,1), 0, math.random(-1,1)))
+            task.wait(0.5)
         end
 
-        -- 🛠️ Расстановка одного юнита с малым оффсетом
         local function deployUnit(pos, index)
-            local unitEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("UnitEvent", 5)
-            if not unitEvent then return false end
+            if getPlayerMoney() < 300 then return false end
+            if isUnitAtExactPosition(pos, 1.8) then return true end
 
-            local playerMoney = getPlayerMoney()
-            if playerMoney < 300 then
-                print(`❌ Недостаточно денег для юнита {index} (нужно: 300, есть: {playerMoney})`)
-                return false
-            end
-
-            local occupied, unitAtPos = isUnitAtExactPosition(pos, 1.8)
-            if occupied then
-                print(`📍 Позиция {index} занята: {unitAtPos.Name}`)
-                return true
-            end
-
-            local offsetRange = math.random(3, 10) / 1000
-            local offsetX = offsetRange * (math.random(0, 1) * 2 - 1)
-            local offsetZ = offsetRange * (math.random(0, 1) * 2 - 1)
-            local offsetPos = pos + Vector3.new(offsetX, 0, offsetZ)
+            local offset = pos + Vector3.new(
+                (math.random(3,10)/1000) * (math.random(0,1)*2-1),
+                0,
+                (math.random(3,10)/1000) * (math.random(0,1)*2-1)
+            )
 
             pcall(function()
-                unitEvent:FireServer("Render", {"Luffo", 39, offsetPos, 0})
-                print(`🚚 [1] Оффсет: {string.format("%.4f, %.4f", offsetPos.X, offsetPos.Z)}`)
+                game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("UnitEvent"):FireServer("Render", {"Luffo", 39, offset, 0})
                 task.wait(0.6)
             end)
 
-            if isUnitAtExactPosition(offsetPos, 2.0) then
-                print(`✅ Юнит {index} поставлен (оффсет)`)
-                moveToPosition(offsetPos)
-                task.wait(0.5)
+            if isUnitAtExactPosition(offset, 2.0) then
+                moveToPosition(offset)
                 return true
             end
 
-            print(`🔁 [2] Точная позиция`)
             pcall(function()
-                unitEvent:FireServer("Render", {"Luffo", 39, pos, 0})
+                game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("UnitEvent"):FireServer("Render", {"Luffo", 39, pos, 0})
                 task.wait(0.6)
             end)
 
             if isUnitAtExactPosition(pos, 2.0) then
-                print(`✅ Юнит {index} поставлен (точно)`)
                 moveToPosition(pos)
-                task.wait(0.5)
                 return true
             end
 
-            local flippedPos = pos - Vector3.new(offsetX, 0, offsetZ)
-            print(`🔄 [3] Обратный оффсет: {string.format("%.4f, %.4f", flippedPos.X, flippedPos.Z)}`)
-            pcall(function()
-                unitEvent:FireServer("Render", {"Luffo", 39, flippedPos, 0})
-                task.wait(0.6)
-            end)
-
-            if isUnitAtExactPosition(flippedPos, 2.0) then
-                print(`✅ Юнит {index} поставлен (обратный оффсет)`)
-                moveToPosition(flippedPos)
-                task.wait(0.5)
-                return true
-            end
-
-            warn(`❌ Не удалось поставить юнит {index} после 3 попыток`)
             return false
         end
 
-        -- 🚀 Расстановка всех юнитов
         local function deployAllUnits()
-            print("📦 Размещаем юнитов...")
-            unitLevels = {} -- 🔁 Сброс уровней
-            randomDelay(1, 2)
-
-            local unitCount = getUnitCount()
-            if unitCount >= 6 then
-                print("🛑 Уже 6 юнитов — больше не ставим")
-                return
-            end
-
-            while getPlayerMoney() < 300 do
-                print(`⏳ Ожидание 300¥ для постановки... (есть: {getPlayerMoney()})`)
-                task.wait(2)
-            end
-
+            unitLevels = {}
+            if getUnitCount() >= 6 then return end
+            while getPlayerMoney() < 300 do task.wait(2) end
             for i, pos in ipairs(TARGET_POSITIONS) do
-                local success = deployUnit(pos, i)
-                if success then
-                    randomDelay(0.8, 1.5)
-                else
-                    print(`❌ Не удалось поставить юнит {i}`)
-                    randomDelay(1.5, 2.0)
-                end
+                deployUnit(pos, i)
+                task.wait(0.8, 1.5)
             end
-
-            print("✅ Все юниты размещены или попытка выполнена")
         end
 
-        -- 🧠 Хранение уровней юнитов
         local unitLevels = {}
-        local MAX_LEVEL = 5
 
-        -- 🔧 Апгрейд: через RemoteEvent
         local function upgradeCheapestUnit()
-            if not getgenv().AutoUpgradeEnabled then return end
-
-            local unitCount = getUnitCount()
-            if unitCount == 0 or unitCount < 6 then
-                print(`🟡 Юнитов: {unitCount}/6 — ставим недостающих...`)
-                deployAllUnits()
-                return
-            end
-
+            if getUnitCount() < 6 then deployAllUnits(); return end
             local currentMoney = getPlayerMoney()
-            local units = game.Workspace:FindFirstChild("Units")
-            if not units then return end
-
-            local upgradableUnits = {}
-            for _, unit in pairs(units:GetChildren()) do
-                if not unit:FindFirstChild("HumanoidRootPart") then continue end
-
-                local unitName = unit.Name
-                local level = unitLevels[unitName] or 1
-
-                local nextCost = nil
-                if level == 1 then nextCost = 250
-                elseif level == 2 then nextCost = 400
-                elseif level == 3 then nextCost = 650
-                elseif level == 4 then nextCost = 900
+            for _, unit in pairs(game.Workspace.Units:GetChildren()) do
+                local name = unit.Name
+                local level = unitLevels[name] or 1
+                local cost = ({250, 400, 650, 900})[level]
+                if cost and currentMoney >= cost then
+                    game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("UnitEvent"):FireServer("Upgrade", name)
+                    unitLevels[name] = level + 1
+                    local hrp = unit:FindFirstChild("HumanoidRootPart")
+                    if hrp then moveToPosition(hrp.Position) end
+                    break
                 end
-
-                if nextCost and currentMoney >= nextCost then
-                    table.insert(upgradableUnits, {
-                        unit = unit,
-                        name = unitName,
-                        level = level,
-                        cost = nextCost
-                    })
-                end
-            end
-
-            table.sort(upgradableUnits, function(a, b)
-                return a.level < b.level
-            end)
-
-            for _, data in ipairs(upgradableUnits) do
-                local needed = data.cost
-                while currentMoney < needed do
-                    print(`⏳ Ждём денег для апгрейда {data.name} (уровень {data.level} → {data.level+1}, нужно: {needed}, есть: {currentMoney})`)
-                    task.wait(2)
-                    currentMoney = getPlayerMoney()
-                end
-
-                print(`🔧 Апгрейдим {data.name}: уровень {data.level} → {data.level+1} за {needed}¥`)
-                local unitEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("UnitEvent")
-                unitEvent:FireServer("Upgrade", data.name)
-                task.wait(0.5)
-
-                unitLevels[data.name] = data.level + 1
-
-                local hrp = data.unit:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    moveToPosition(hrp.Position)
-                    task.wait(0.5)
-                end
-
-                break
             end
         end
 
-        -- 🌐 Отправка результата матча в Discord
+        -- 🌐 Webhook: с защитой и ожиданием
         local function sendMatchResult()
+            task.wait(2) -- Даём время GUI загрузиться
             local endScreen = player.PlayerGui:FindFirstChild("EndScreen")
-            if not endScreen then return end
+            if not endScreen or not endScreen.Enabled then return end
 
-            local holder = endScreen:FindFirstChild("Holder")
-            if not holder then return end
-
-            local main = holder:FindFirstChild("Main")
+            local main = endScreen:FindFirstChild("Holder")?.Main
             if not main then return end
 
-            local stageStats = main:FindFirstChild("StageStatistics")
-            if not stageStats then return end
-
-            local playTime = stageStats:FindFirstChild("PlayTime")
-            local timeText = playTime and playTime.Amount.Text or "0:00"
-
-            local inventoryTemplate = main:FindFirstChild("InventoryTemplate")
-            if not inventoryTemplate then return end
-
+            local time = main.StageStatistics?.PlayTime?.Amount?.Text or "0:00"
             local rewards = {}
-            for _, reward in pairs(inventoryTemplate:GetChildren()) do
-                if reward:IsA("Frame") and reward.Name ~= "BuyMoreSpace" then
-                    local nameLabel = reward:FindFirstChild("Name")
-                    local amountLabel = reward:FindFirstChild("Amount")
-                    if nameLabel and amountLabel then
-                        table.insert(rewards, {
-                            name = nameLabel.Text,
-                            amount = tonumber(amountLabel.Text) or 0
-                        })
-                    end
+            for _, r in pairs(main.InventoryTemplate:GetChildren()) do
+                if r:IsA("Frame") and r.Name ~= "BuyMoreSpace" then
+                    local n = r:FindFirstChild("Name")?.Text
+                    local a = tonumber(r:FindFirstChild("Amount")?.Text) or 0
+                    if n then table.insert(rewards, {n, a}) end
                 end
             end
 
-            -- Формирование вебхука
-            local levelText = player.PlayerGui.Hotbar.Main.Level.Level.Text
+            local level = player.PlayerGui.Hotbar.Main.Level.Level.Text
             local embed = {
                 title = "Anime Vanguards",
                 fields = {
-                    { name = "Name", value = `[${levelText}] ${player.Name}`, inline = false },
-                    { name = "Result", value = `Planet Namak (Act1 Normal) - Finished\n- Time: ${timeText}\n- Reward:`, inline = false }
+                    { name = "Name", value = `[${level}] ${player.Name}`, inline = false },
+                    { name = "Result", value = `Planet Namak (Act1 Normal) - Finished\n- Time: ${time}\n- Reward:`, inline = false }
                 },
-                color = 5814783,
-                timestamp = DateTime.now():ToIsoDate()
+                color = 5814783
             }
 
             for _, r in pairs(rewards) do
-                table.insert(embed.fields, { name = "", value = `+${r.amount} ${r.name}`, inline = false })
+                table.insert(embed.fields, { name = "", value = `+${r[2]} ${r[1]}`, inline = false })
             end
 
             local data = { embeds = { embed } }
-            local request = request or http_request or http.request
             local body = game:GetService("HttpService"):JSONEncode(data)
             pcall(function()
                 request({
@@ -487,68 +282,114 @@ local function main()
             end)
         end
 
-        -- 🔁 ЦИКЛЫ
-
-        -- Апгрейд
+        -- 🔁 Циклы
         coroutine.wrap(function()
             while getgenv().AutoUpgradeEnabled do
-                if isGameActive() then
-                    upgradeCheapestUnit()
-                end
+                if isGameActive() then upgradeCheapestUnit() end
                 task.wait(1.0, 1.8)
             end
         end)()
 
-        -- Рестарт + вебхук
         coroutine.wrap(function()
             while getgenv().MatchRestartEnabled do
                 local endScreen = player.PlayerGui:FindFirstChild("EndScreen")
                 if endScreen and endScreen.Enabled then
                     print("🔚 Матч завершён. Перезапускаем...")
 
+                    -- 🔁 Голосуем за реплей (с ожиданием)
                     pcall(function()
-                        game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("EndScreen"):WaitForChild("VoteEvent"):FireServer("Retry")
-                        print("🗳️ Голосуем за реплей")
+                        local event = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("EndScreen"):WaitForChild("VoteEvent", 5)
+                        if event then event:FireServer("Retry") end
                     end)
 
-                    randomDelay(3, 5)
+                    task.wait(3)
                     fireSkipWaveEvent()
-                    randomDelay(8, 12)
+                    task.wait(8, 12)
                     waitForWaveStart()
                     deployAllUnits()
 
-                    -- Отправляем вебхук
                     task.delay(1, sendMatchResult)
                 end
                 task.wait(2)
             end
         end)()
 
-        -- 🚀 СТАРТ
-        print("🔥 Инициализация скрипта в боёвке...")
+        -- 🚀 Старт
         fireSkipWaveEvent()
         waitForWaveStart()
         deployAllUnits()
-
-        print("✅ Автоматизация запущена")
-
-    else
-        warn("❌ Неподдерживаемая игра:", placeId)
-        return
     end
 end
 
--- 🛡️ Запуск с обработкой ошибок
+-- 🛡️ Запуск
 pcall(function()
     randomDelay(0.5, 1.5)
     main()
 end)
 
--- 🛑 Функция остановки
+-- 🛑 Остановка
 function stopScript()
     getgenv().AutoUpgradeEnabled = false
     getgenv().MatchRestartEnabled = false
     print("🛑 Скрипт остановлен")
 end
 
-print("🟢 Скрипт загружен. Используй stopScript(), чтобы остановить.")
+print("🟢 Скрипт загружен. Используй stopScript().")
+
+-- 📱 Мобильная кнопка + Очистка Entities
+task.spawn(function()
+    if not game:IsLoaded() then game.Loaded:Wait() end
+    task.wait(2)
+
+    -- 🔘 Кнопка
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "MobileCombatHelper"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0, 120, 0, 40)
+    button.Position = UDim2.new(0, 10, 1, -50)
+    button.Text = "3D: ON"
+    button.Font = Enum.Font.Gotham
+    button.TextSize = 14
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+    button.BorderColor3 = Color3.fromRGB(200, 200, 200)
+    button.BorderSizePixel = 2
+    button.Parent = screenGui
+
+    getgenv().RenderingEnabled = true
+    game:GetService("RunService"):Set3dRenderingEnabled(true)
+
+    button.MouseButton1Click:Connect(function()
+        getgenv().RenderingEnabled = not getgenv().RenderingEnabled
+        game:GetService("RunService"):Set3dRenderingEnabled(getgenv().RenderingEnabled)
+        button.Text = `3D: ${getgenv().RenderingEnabled and "ON" or "OFF"}`
+        button.BackgroundColor3 = getgenv().RenderingEnabled and Color3.fromRGB(0, 100, 0) or Color3.fromRGB(100, 0, 0)
+    end)
+
+    -- 🧹 Очистка Entities
+    local ws = game:GetService("Workspace")
+    local function cleanup(child)
+        if child.Name == "Entities" then
+            child.ChildAdded:Connect(function(c)
+                task.delay(0.05, function()
+                    if c and not c:IsDescendantOf(ws.Map) then
+                        pcall(c.Destroy, c)
+                    end
+                end)
+            end)
+            for _, c in pairs(child:GetChildren()) do
+                if not c:IsDescendantOf(ws.Map) then
+                    pcall(c.Destroy, c)
+                end
+            end
+        end
+    end
+
+    if ws:FindFirstChild("Entities") then
+        cleanup(ws.Entities)
+    end
+    ws.ChildAdded:Connect(cleanup)
+end)

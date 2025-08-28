@@ -32,7 +32,7 @@ local function randomDelay(min, max)
     return delay
 end
 
--- 🧠 ОСНОВНАЯ ЛОГИКА
+-- ⚙️ ОСНОВНАЯ ЛОГИКА
 local function main()
     local placeId = game.PlaceId
     local player = game:GetService("Players").LocalPlayer
@@ -153,7 +153,7 @@ local function main()
         local function fireSkipWaveEvent()
             spawn(function()
                 local attempts = 0
-                while attempts < 5 do
+                while attempts < 3 do
                     pcall(function()
                         local skipEvent = game.ReplicatedStorage:WaitForChild("Networking")
                             :WaitForChild("SkipWaveEvent")
@@ -164,26 +164,39 @@ local function main()
                     attempts += 1
                     task.wait(1)
                 end
-                warn("❌ Не удалось отправить SkipWaveEvent после 5 попыток")
+                warn("❌ Не удалось отправить SkipWaveEvent после 3 попыток")
             end)
         end
 
         -- 🧩 ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 
-        -- Проверка, активна ли игра
+        -- ✅ Проверка, активна ли игра
         local function isGameActive()
             local hotbar = player.PlayerGui:FindFirstChild("Hotbar")
             local endScreen = player.PlayerGui:FindFirstChild("EndScreen")
             return hotbar and hotbar.Enabled == true and (not endScreen or not endScreen.Enabled)
         end
 
-        -- Проверка, идёт ли волна
+        -- ✅ Проверка, идёт ли волна (через GUI)
         local function isWaveActive()
-            local wave = game.Workspace:FindFirstChild("WaveController")
-            return wave and wave:FindFirstChild("CurrentWave") and wave.CurrentWave.Value > 0
+            local player = game:GetService("Players").LocalPlayer
+            local hud = player.PlayerGui:FindFirstChild("HUD")
+            if not hud then return false end
+
+            local wavesFrame = hud:FindFirstChild("Map")
+            if not wavesFrame then return false end
+
+            local contentTextObj = wavesFrame:FindFirstChild("WavesAmount")
+            if not contentTextObj then return false end
+
+            local contentText = contentTextObj:FindFirstChild("ContentText")
+            if not contentText or not contentText.Text then return false end
+
+            local currentWave = tonumber((string.split(contentText.Text, "/"))[1]) or 0
+            return currentWave > 0
         end
 
-        -- Ожидание начала волны
+        -- ✅ Ожидание начала волны
         local function waitForWaveStart()
             print("⏳ Ожидаем начало волны...")
             while getgenv().MatchRestartEnabled do
@@ -423,26 +436,16 @@ local function main()
 
         -- 🌐 Отправка результата матча в Discord
         local function sendMatchResult()
-            -- Ждём немного, чтобы UI загрузился
             task.wait(0.5)
 
             local endScreen = player.PlayerGui:FindFirstChild("EndScreen")
-            if not endScreen then
-                warn("❌ EndScreen не найден")
-                return
-            end
+            if not endScreen then return end
 
             local holder = endScreen:FindFirstChild("Holder")
-            if not holder then
-                warn("❌ Holder не найден в EndScreen")
-                return
-            end
+            if not holder then return end
 
             local main = holder:FindFirstChild("Main")
-            if not main then
-                warn("❌ Main не найден в Holder")
-                return
-            end
+            if not main then return end
 
             -- 🕐 Время
             local stageStats = main:FindFirstChild("StageStatistics")
@@ -451,10 +454,7 @@ local function main()
 
             -- 🎁 Награды
             local inventoryTemplate = main:FindFirstChild("InventoryTemplate")
-            if not inventoryTemplate then
-                warn("❌ InventoryTemplate не найден")
-                return
-            end
+            if not inventoryTemplate then return end
 
             local rewards = {}
             for _, reward in pairs(inventoryTemplate:GetChildren()) do
@@ -489,7 +489,7 @@ local function main()
                     }
                 },
                 color = 5814783,
-                timestamp = os.date("!%Y-%m-%dT%H:%M:%S.000Z") -- ✅ ISO 8601
+                timestamp = os.date("!%Y-%m-%dT%H:%M:%S.000Z")
             }
 
             for _, r in pairs(rewards) do
@@ -526,8 +526,7 @@ local function main()
             end
 
             -- 📤 Отправка
-            local response
-            success, response = pcall(function()
+            local success, response = pcall(function()
                 return httpRequest({
                     Url = webhookUrl,
                     Method = "POST",
@@ -586,11 +585,14 @@ local function main()
                         -- Ждём исчезновения экрана
                         repeat task.wait(0.1) until not child.Parent
 
-                        randomDelay(3, 5)
-                        fireSkipWaveEvent()
-                        randomDelay(8, 12)
+                        -- Ожидаем начало новой волны
                         waitForWaveStart()
+
+                        -- Ставим юнитов
                         deployAllUnits()
+
+                        -- Пропускаем волну один раз
+                        fireSkipWaveEvent()
                     end
                 end)
                 task.wait(1)
@@ -623,49 +625,5 @@ function stopScript()
     getgenv().MatchRestartEnabled = false
     print("🛑 Скрипт остановлен")
 end
-
--- 📱 Кнопка 3D Rendering
-coroutine.wrap(function()
-    local player = game:GetService("Players").LocalPlayer
-    local playerGui = player:WaitForChild("PlayerGui")
-
-    if not pcall(function() game:GetService("RunService"):Set3dRenderingEnabled(true) end) then
-        warn("⚠️ Set3dRenderingEnabled не поддерживается")
-        return
-    end
-
-    local button = Instance.new("TextButton")
-    button.Name = "Toggle3DButton"
-    button.Text = "3D: ON"
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.BackgroundColor3 = Color3.new(0, 0.5, 0)
-    button.Size = UDim2.new(0, 120, 0, 40)
-    button.Position = UDim2.new(0.8, 0, 0.9, 0)
-    button.AnchorPoint = Vector2.new(0.5, 0.5)
-    button.BorderSizePixel = 0
-    button.Font = Enum.Font.GothamBold
-    button.TextSize = 14
-    button.Visible = true
-    button.Active = true
-    button.ZIndex = 10
-    button.Parent = playerGui
-
-    local isEnabled = true
-    button.MouseButton1Click:Connect(function()
-        isEnabled = not isEnabled
-        game:GetService("RunService"):Set3dRenderingEnabled(isEnabled)
-        button.Text = "3D: " .. (isEnabled and "ON" or "OFF")
-        button.BackgroundColor3 = isEnabled and Color3.new(0, 0.5, 0) or Color3.new(0.7, 0, 0)
-        print(`🎮 3D Rendering: {isEnabled and "ВКЛ" or "ВЫКЛ"}`)
-    end)
-
-    player.CharacterAdded:Connect(function()
-        if button and not button.Parent then
-            button:Destroy()
-        end
-    end)
-
-    print("📱 Кнопка '3D Rendering' добавлена")
-end)()
 
 print("🟢 Скрипт загружен. Используй stopScript(), чтобы остановить.")

@@ -4,6 +4,7 @@ if not getgenv then
 end
 if not getgenv().FarmAltsFunpay then return end
 if getgenv().NoRenderAV == nil then getgenv().NoRenderAV = false end
+
 -- ⚙️ Глобальные настройки
 getgenv().days_amount = 3
 getgenv().AutoUpgradeEnabled = true
@@ -572,30 +573,38 @@ local function main()
         coroutine.wrap(function()
             while getgenv().AutoUpgradeEnabled do
                 if isGameActive() then upgradeCheapestUnit() end
-                task.wait(1.0, 1.8)
+                randomDelay(1.0, 1.8)
             end
         end)()
 
-        -- Обработка конца матча
+        -- Обработка конца матча (с рандомными задержками)
         local lastEndScreen = nil
         playerGui.ChildAdded:Connect(function(child)
             if child.Name == "EndScreen" and child ~= lastEndScreen then
                 lastEndScreen = child
 
-                task.wait(1)
+                randomDelay(0.8, 1.2)  -- Отправка вебхука
                 pcall(sendMatchResult)
                 resetCollectedItems()
 
-                task.wait(1)
+                randomDelay(0.8, 1.2)  -- Голосование за ретрай
                 pcall(function()
-                    game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("EndScreen"):WaitForChild("VoteEvent")
-                        :FireServer("Retry")
+                    local voteEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("EndScreen"):WaitForChild("VoteEvent")
+                    voteEvent:FireServer("Retry")
                     print("🗳️ Голосуем за реплей")
                 end)
 
+                -- Ждём исчезновения экрана
                 repeat task.wait(0.1) until not child.Parent
+                print("🗑️ Экран завершения закрыт")
+
+                randomDelay(0.8, 1.2)  -- Ожидание волны
                 waitForWaveStart()
+
+                randomDelay(0.8, 1.2)  -- Расстановка
                 deployAllUnits()
+
+                randomDelay(0.8, 1.2)  -- Пропуск волны
                 fireSkipWaveEvent()
             end
         end)

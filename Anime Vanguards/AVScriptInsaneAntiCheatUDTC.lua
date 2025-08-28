@@ -10,7 +10,6 @@ getgenv().AutoUpgradeEnabled = true
 getgenv().MatchRestartEnabled = true
 
 -- 🔗 Убедись, что установил вебхук!
--- Пример: getgenv().AV_WEBHOOK_URL = "https://discord.com/api/webhooks/..."
 if not getgenv().AV_WEBHOOK_URL or getgenv().AV_WEBHOOK_URL == "" then
     warn("⚠️ Вебхук URL не задан! Используй: getgenv().AV_WEBHOOK_URL = '...'")
 end
@@ -32,10 +31,18 @@ local function randomDelay(min, max)
     return delay
 end
 
+-- 🧮 Глобальный счётчик предметов
+local collectedItems = {}
+
+-- ⏱️ Защита от дублей
+local DEBOUNCE_TIME = 0.1
+local lastRead = {}
+
 -- ⚙️ ОСНОВНАЯ ЛОГИКА
 local function main()
     local placeId = game.PlaceId
     local player = game:GetService("Players").LocalPlayer
+    local playerGui = player:WaitForChild("PlayerGui", 10)
 
     -- ✅ Анти-афк (через VirtualUser)
     local function enableAntiIdle()
@@ -179,7 +186,6 @@ local function main()
 
         -- ✅ Проверка, идёт ли волна (через GUI)
         local function isWaveActive()
-            local player = game:GetService("Players").LocalPlayer
             local hud = player.PlayerGui:FindFirstChild("HUD")
             if not hud then return false end
 
@@ -434,11 +440,63 @@ local function main()
             end
         end
 
+        -- 📦 Сбор предметов через ItemNotifications
+        local itemNotificationsParent = playerGui:WaitForChild("ItemNotifications", 5)
+        if not itemNotificationsParent then
+            warn("⚠️ ItemNotifications не найден, пропуск сбора предметов")
+        else
+            local itemNotifications = itemNotificationsParent:FindFirstChild("ItemNotifications")
+            if itemNotifications then
+                local function processItemTemplate(child)
+                    if child.Name ~= "ItemTemplate" then return end
+                    if child:GetAttribute("Processed") then return end
+                    child:SetAttribute("Processed", true)
+
+                    task.delay(0.05, function()
+                        pcall(function()
+                            local itemFrame = child:FindFirstChild("ItemFrame")
+                            if not itemFrame then return end
+
+                            local main = itemFrame:FindFirstChild("Main")
+                            if not main then return end
+
+                            local itemNameLabel = main:FindFirstChild("ItemName")
+                            local itemAmountLabel = main:FindFirstChild("ItemAmount")
+                            if not itemNameLabel or not itemAmountLabel then return end
+
+                            local itemName = tostring(itemNameLabel.Text or "Неизвестно")
+                            local itemAmountText = tostring(itemAmountLabel.Text or "0")
+                            local amount = tonumber(string.match(itemAmountText, "%d+")) or 0
+                            if amount == 0 then return end
+
+                            local key = itemName .. "|" .. itemAmountText
+                            local now = tick()
+                            if lastRead[key] and (now - lastRead[key] < DEBOUNCE_TIME) then return end
+                            lastRead[key] = now
+
+                            if not collectedItems[itemName] then
+                                collectedItems[itemName] = 0
+                            end
+                            collectedItems[itemName] += amount
+
+                            print("📥 Получено:", itemName, "| Кол-во:", amount)
+                        end)
+                    end)
+                end
+
+                -- Обработка новых и существующих
+                itemNotifications.ChildAdded:Connect(processItemTemplate)
+                for _, child in pairs(itemNotifications:GetChildren()) do
+                    processItemTemplate(child)
+                end
+            end
+        end
+
         -- 🌐 Отправка результата матча в Discord
         local function sendMatchResult()
             task.wait(0.5)
 
-            local endScreen = player.PlayerGui:FindFirstChild("EndScreen")
+            local endScreen = playerGui:FindFirstChild("EndScreen")
             if not endScreen then return end
 
             local holder = endScreen:FindFirstChild("Holder")
@@ -452,27 +510,9 @@ local function main()
             local playTime = stageStats and stageStats:FindFirstChild("PlayTime")
             local timeText = (playTime and playTime:FindFirstChild("Amount") and playTime.Amount.Text) or "0:00"
 
-            -- 🎁 Награды
-            local inventoryTemplate = main:FindFirstChild("InventoryTemplate")
-            if not inventoryTemplate then return end
-
-            local rewards = {}
-            for _, reward in pairs(inventoryTemplate:GetChildren()) do
-                if reward:IsA("Frame") and reward.Name ~= "BuyMoreSpace" then
-                    local nameLabel = reward:FindFirstChild("Name")
-                    local amountLabel = reward:FindFirstChild("Amount")
-                    if nameLabel and amountLabel then
-                        table.insert(rewards, {
-                            name = tostring(nameLabel.Text),
-                            amount = tonumber(amountLabel.Text) or 0
-                        })
-                    end
-                end
-            end
-
             -- 🔢 Уровень
             local levelText = "Unknown"
-            local hotbar = player.PlayerGui:FindFirstChild("Hotbar")
+            local hotbar = playerGui:FindFirstChild("Hotbar")
             if hotbar and hotbar.Main and hotbar.Main.Level and hotbar.Main.Level.Level then
                 levelText = hotbar.Main.Level.Level.Text
             end
@@ -483,8 +523,8 @@ local function main()
                 description = "[" .. levelText .. "] " .. player.Name,
                 fields = {
                     {
-                        name = "Result",
-                        value = "**Planet Namak (Act1 Normal)**\n⏱️ Time: `" .. timeText .. "`",
+                        name = "Результат",
+                        value = "**Planet Namak (Act1 Normal)**\n⏱️ Время: `" .. timeText .. "`",
                         inline = false
                     }
                 },
@@ -492,14 +532,21 @@ local function main()
                 timestamp = os.date("!%Y-%m-%dT%H:%M:%S.000Z")
             }
 
-            for _, r in pairs(rewards) do
-                if r.amount > 0 then
+            -- 📦 Добавляем собранные предметы
+            if next(collectedItems) then
+                for itemName, total in pairs(collectedItems) do
                     table.insert(embed.fields, {
-                        name = "Reward",
-                        value = "+" .. r.amount .. " " .. r.name,
+                        name = "Награда",
+                        value = "+" .. total .. " " .. itemName,
                         inline = true
                     })
                 end
+            else
+                table.insert(embed.fields, {
+                    name = "Награды",
+                    value = "Ничего не получено",
+                    inline = false
+                })
             end
 
             local data = { embeds = { embed } }
@@ -507,14 +554,14 @@ local function main()
             -- 🔗 Проверка URL
             local webhookUrl = getgenv().AV_WEBHOOK_URL
             if not webhookUrl or webhookUrl == "" then
-                warn("❌ Вебхук URL не задан! Установи: getgenv().AV_WEBHOOK_URL = 'https://...'")
+                warn("❌ Вебхук URL не задан!")
                 return
             end
 
             -- 🔧 Выбор request
             local httpRequest = request or http_request or (http and http.request) or nil
             if not httpRequest then
-                warn("❌ Не найдена функция request. Попробуй Synapse X / Krnl / CC")
+                warn("❌ Не найдена функция request")
                 return
             end
 
@@ -539,11 +586,10 @@ local function main()
                 if response.StatusCode == 204 then
                     print("📤 Вебхук отправлен в Discord")
                 else
-                    warn("⚠️ Вебхук отправлен, но статус:", response.StatusCode)
+                    warn("⚠️ Статус:", response.StatusCode)
                 end
             else
                 warn("❌ Ошибка отправки:", response or "неизвестно")
-                warn("🔗 URL:", webhookUrl)
             end
         end
 
@@ -564,47 +610,34 @@ local function main()
             local lastProcessed = nil
 
             while getgenv().MatchRestartEnabled do
-                player.PlayerGui.ChildAdded:Connect(function(child)
-                    -- Проверяем, что это EndScreen и он ещё не обрабатывался
+                playerGui.ChildAdded:Connect(function(child)
                     if child.Name == "EndScreen" and child ~= lastProcessed then
-                        lastProcessed = child  -- Защита от дублирования
+                        lastProcessed = child
 
                         print("🔚 Матч завершён. Обработка...")
 
-                        -- 1. Ждём 1 секунду
                         task.wait(1)
-
-                        -- 2. Отправляем вебхук
                         pcall(sendMatchResult)
                         print("📤 Вебхук отправлен")
 
-                        -- 3. Ждём ещё 1 секунду
                         task.wait(1)
-
-                        -- 4. Голосуем за ретрай
                         pcall(function()
                             local voteEvent = game.ReplicatedStorage:WaitForChild("Networking")
                                 :WaitForChild("EndScreen")
                                 :WaitForChild("VoteEvent")
                             voteEvent:FireServer("Retry")
-                            print("🗳️ Отправлено: Retry")
+                            print("🗳️ Голосуем за реплей")
                         end)
 
-                        -- 5. Ждём, пока EndScreen исчезнет
                         repeat task.wait(0.1) until not child.Parent
                         print("🗑️ Экран завершения закрыт")
 
-                        -- 6. Ожидаем начало новой волны (GUI-проверка)
                         waitForWaveStart()
-
-                        -- 7. Ставим юнитов
                         deployAllUnits()
-
-                        -- 8. Пропускаем волну (один раз)
                         fireSkipWaveEvent()
                     end
                 end)
-                task.wait(1) -- Лёгкая защита от нагрузки
+                task.wait(1)
             end
         end)()
 

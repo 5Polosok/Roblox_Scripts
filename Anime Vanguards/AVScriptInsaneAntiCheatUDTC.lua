@@ -52,7 +52,7 @@ local function main()
         repeat task.wait() until player.PlayerGui:FindFirstChild("Windows")
 
         -- 1. Выбор начального юнита
-        spawn(function()
+        task.spawn(function()
             pcall(function()
                 local networking = game.ReplicatedStorage:WaitForChild("Networking")
                 local selectionEvent = networking:WaitForChild("Units"):WaitForChild("UnitSelectionEvent")
@@ -63,7 +63,7 @@ local function main()
         end)
 
         -- 2. Экипировка первого доступного юнита
-        spawn(function()
+        task.spawn(function()
             pcall(function()
                 local unitsFrame = player.PlayerGui.Windows.Units.Holder.Main.Units
                 for _, frame in pairs(unitsFrame:GetChildren()) do
@@ -79,7 +79,7 @@ local function main()
         end)
 
         -- 3. Получение дейликов
-        spawn(function()
+        task.spawn(function()
             pcall(function()
                 local rewardEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("DailyRewardEvent")
                 for _, season in pairs({"Summer", "Spring", "Special"}) do
@@ -93,7 +93,7 @@ local function main()
         end)
 
         -- 4. Батлпасс
-        spawn(function()
+        task.spawn(function()
             pcall(function()
                 local bpEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("BattlepassEvent")
                 bpEvent:FireServer("ClaimAll")
@@ -103,7 +103,7 @@ local function main()
         end)
 
         -- 5. Квесты
-        spawn(function()
+        task.spawn(function()
             pcall(function()
                 local questEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("Quests"):WaitForChild("ClaimQuest")
                 questEvent:FireServer("ClaimAll")
@@ -113,7 +113,8 @@ local function main()
         end)
 
         -- 6. Создание и запуск матча
-        spawn(function()
+        task.spawn(function()
+            task.wait(3)
             pcall(function()
                 local lobbyEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("LobbyEvent")
                 lobbyEvent:FireServer("AddMatch", {

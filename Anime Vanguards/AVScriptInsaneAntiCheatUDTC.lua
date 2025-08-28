@@ -561,41 +561,50 @@ local function main()
 
         -- Обработка завершения матча
         coroutine.wrap(function()
+            local lastProcessed = nil
+
             while getgenv().MatchRestartEnabled do
                 player.PlayerGui.ChildAdded:Connect(function(child)
-                    if child.Name == "EndScreen" then
-                        print("🔚 Матч завершён. Отправляем вебхук...")
+                    -- Проверяем, что это EndScreen и он ещё не обрабатывался
+                    if child.Name == "EndScreen" and child ~= lastProcessed then
+                        lastProcessed = child  -- Защита от дублирования
 
-                        -- Отправляем вебхук
-                        task.delay(0.2, function()
-                            pcall(sendMatchResult)
+                        print("🔚 Матч завершён. Обработка...")
+
+                        -- 1. Ждём 1 секунду
+                        task.wait(1)
+
+                        -- 2. Отправляем вебхук
+                        pcall(sendMatchResult)
+                        print("📤 Вебхук отправлен")
+
+                        -- 3. Ждём ещё 1 секунду
+                        task.wait(1)
+
+                        -- 4. Голосуем за ретрай
+                        pcall(function()
+                            local voteEvent = game.ReplicatedStorage:WaitForChild("Networking")
+                                :WaitForChild("EndScreen")
+                                :WaitForChild("VoteEvent")
+                            voteEvent:FireServer("Retry")
+                            print("🗳️ Отправлено: Retry")
                         end)
 
-                        -- Голосуем за ретрай
-                        task.delay(0.5, function()
-                            pcall(function()
-                                local voteEvent = game.ReplicatedStorage:WaitForChild("Networking")
-                                    :WaitForChild("EndScreen")
-                                    :WaitForChild("VoteEvent")
-                                voteEvent:FireServer("Retry")
-                                print("🗳️ Голосуем за реплей")
-                            end)
-                        end)
-
-                        -- Ждём исчезновения экрана
+                        -- 5. Ждём, пока EndScreen исчезнет
                         repeat task.wait(0.1) until not child.Parent
+                        print("🗑️ Экран завершения закрыт")
 
-                        -- Ожидаем начало новой волны
+                        -- 6. Ожидаем начало новой волны (GUI-проверка)
                         waitForWaveStart()
 
-                        -- Ставим юнитов
+                        -- 7. Ставим юнитов
                         deployAllUnits()
 
-                        -- Пропускаем волну один раз
+                        -- 8. Пропускаем волну (один раз)
                         fireSkipWaveEvent()
                     end
                 end)
-                task.wait(1)
+                task.wait(1) -- Лёгкая защита от нагрузки
             end
         end)()
 

@@ -18,14 +18,14 @@ local Loader = function()
     end
 
     --Anime Vanguards
-    if game.PlaceId == 16146832113 then
+    if game.PlaceId == 16146832113 or game.PlaceId == 16277809958 then
         getgenv().enable_fpscap = true
         getgenv().fps_amount = 30
         loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/FEscripts/setfpslimit.lua"))()
         --AutoClaimer statements
         getgenv().redeemcodes = true
         getgenv().claimlevel = true
-        
+        task.wait(1)
         --loadstring
         loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/Anime%20Vanguards/AVScriptLoader.lua"))()
         return 

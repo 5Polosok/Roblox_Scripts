@@ -55,32 +55,67 @@ local function main()
     local function resetCollectedItems()
         collectedItems = {}
     end
+    local lastEndScreen = nil
+    playerGui.ChildAdded:Connect(function(child)
+        if child.Name == "EndScreen" and child ~= lastEndScreen then
+            lastEndScreen = child
 
-    local function processItemNotification(child)
-        if child.Name ~= "ItemTemplate" or child:GetAttribute("Processed") then return end
-        child:SetAttribute("Processed", true)
+            randomDelay(0.8, 1.2)
+            pcall(sendMatchResult)
+            resetCollectedItems()
 
-        task.delay(0.05, function()
+            randomDelay(0.8, 1.2)
             pcall(function()
-                local itemFrame = child:FindFirstChild("ItemFrame")
-                local main = itemFrame and itemFrame:FindFirstChild("Main")
-                local nameObj = main and main:FindFirstChild("ItemName")
-                local amountObj = main and main:FindFirstChild("ItemAmount")
-                if not (nameObj and amountObj) then return end
-
-                local name = tostring(nameObj.Text)
-                local amountText = tostring(amountObj.Text)
-                local amount = tonumber(string.match(amountText, "%d+")) or 1
-
-                if not collectedItems[name] then
-                    collectedItems[name] = 0
-                end
-                collectedItems[name] += amount
-
-                print(`📥 +{amount} {name}`)
+                local voteEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("EndScreen"):WaitForChild("VoteEvent")
+                voteEvent:FireServer("Retry")
+                print("🗳️ Голосуем за реплей")
             end)
-        end)
-    end
+
+            -- Ждём исчезновения экрана
+            repeat task.wait(0.1) until not child.Parent
+            print("🗑️ Экран завершения закрыт")
+
+            -- 🔁 Ждём, пока HUD загрузится и волна станет 0/15
+            randomDelay(1.0, 2.0)
+            print("⏳ Ожидаем восстановление интерфейса...")
+
+            local function waitForHUDAndSkip()
+                local maxWait = 30 -- максимум 30 секунд
+                for i = 1, maxWait * 5 do
+                    if not getgenv().MatchRestartEnabled then return end
+
+                    local current, total = getCurrentWave()
+                    if total == 15 and current == 0 then
+                        print("🎯 Волна 0/15 обнаружена — пропускаем...")
+                        fireSkipWaveEvent()
+                        return true
+                    end
+
+                    task.wait(0.2)
+                end
+                warn("⏰ Не удалось обнаружить 0/15 в течение 30 секунд")
+            end
+
+            -- Запускаем ожидание
+            spawn(waitForHUDAndSkip)
+
+            -- Дополнительно: через 5 секунд — попробуем разместить юнитов, если ещё не начали
+            task.delay(3, function()
+                if getgenv().MatchRestartEnabled and getCurrentWave() == 0 then
+                    print("⚠️ Волна всё ещё 0/15 — принудительно пропускаем...")
+                    fireSkipWaveEvent()
+                end
+            end)
+
+            -- Ещё один резервный скип через 10 сек
+            task.delay(6, function()
+                if getgenv().MatchRestartEnabled and getCurrentWave() == 0 then
+                    print("🚨 Резервный пропуск волны...")
+                    fireSkipWaveEvent()
+                end
+            end)
+        end
+    end)
 
     if placeId == 16146832113 then
         -- 🌞 РЕЖИМ: ЛОББИ (МЕНЮ)

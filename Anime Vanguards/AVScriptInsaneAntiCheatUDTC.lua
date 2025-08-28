@@ -52,84 +52,72 @@ local function main()
         repeat task.wait() until player.PlayerGui:FindFirstChild("Windows")
 
         -- 1. Выбор начального юнита
-        task.spawn(function()
-            pcall(function()
-                local networking = game.ReplicatedStorage:WaitForChild("Networking")
-                local selectionEvent = networking:WaitForChild("Units"):WaitForChild("UnitSelectionEvent")
-                selectionEvent:FireServer("Select", "Luffo")
-                print("✅ Юнит Luffo выбран")
-                randomDelay(0.3, 0.7)
-            end)
+        pcall(function()
+            local networking = game.ReplicatedStorage:WaitForChild("Networking")
+            local selectionEvent = networking:WaitForChild("Units"):WaitForChild("UnitSelectionEvent")
+            selectionEvent:FireServer("Select", "Luffo")
+            print("✅ Юнит Luffo выбран")
+            randomDelay(0.3, 0.7)
         end)
 
         -- 2. Экипировка первого доступного юнита
-        task.spawn(function()
-            pcall(function()
-                local unitsFrame = player.PlayerGui.Windows.Units.Holder.Main.Units
-                for _, frame in pairs(unitsFrame:GetChildren()) do
-                    if frame:IsA("Frame") and frame.Name ~= "BuyMoreSpace" then
-                        local equipEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("Units"):WaitForChild("EquipEvent")
-                        equipEvent:FireServer("Equip", frame.Name)
-                        print(`✅ Экипирован: {frame.Name}`)
-                        break
-                    end
-                    randomDelay(0.1, 0.3)
+        pcall(function()
+            local unitsFrame = player.PlayerGui.Windows.Units.Holder.Main.Units
+            for _, frame in pairs(unitsFrame:GetChildren()) do
+                if frame:IsA("Frame") and frame.Name ~= "BuyMoreSpace" then
+                    local equipEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("Units"):WaitForChild("EquipEvent")
+                    equipEvent:FireServer("Equip", frame.Name)
+                    print(`✅ Экипирован: {frame.Name}`)
+                    break
                 end
-            end)
+                randomDelay(0.1, 0.3)
+            end
         end)
 
         -- 3. Получение дейликов
-        task.spawn(function()
-            pcall(function()
-                local rewardEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("DailyRewardEvent")
-                for _, season in pairs({"Summer", "Spring", "Special"}) do
-                    for day = 1, getgenv().days_amount do
-                        rewardEvent:FireServer("Claim", {season, day})
-                        print(`🎁 Получено: {season} — День {day}`)
-                        randomDelay(0.2, 0.4)
-                    end
+        pcall(function()
+            local rewardEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("DailyRewardEvent")
+            for _, season in pairs({"Summer", "Spring", "Special"}) do
+                for day = 1, getgenv().days_amount do
+                    rewardEvent:FireServer("Claim", {season, day})
+                    print(`🎁 Получено: {season} — День {day}`)
+                    randomDelay(0.2, 0.4)
                 end
-            end)
+            end
         end)
 
         -- 4. Батлпасс
-        task.spawn(function()
-            pcall(function()
-                local bpEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("BattlepassEvent")
-                bpEvent:FireServer("ClaimAll")
-                print("🎖️ Все награды Battlepass получены")
-                randomDelay(0.5, 1.2)
-            end)
+        pcall(function()
+            local bpEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("BattlepassEvent")
+            bpEvent:FireServer("ClaimAll")
+            print("🎖️ Все награды Battlepass получены")
+            randomDelay(0.5, 1.2)
         end)
 
         -- 5. Квесты
-        task.spawn(function()
-            pcall(function()
-                local questEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("Quests"):WaitForChild("ClaimQuest")
-                questEvent:FireServer("ClaimAll")
-                print("📜 Все квесты получены")
-                randomDelay(0.5, 1.0)
-            end)
+        pcall(function()
+            local questEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("Quests"):WaitForChild("ClaimQuest")
+            questEvent:FireServer("ClaimAll")
+            print("📜 Все квесты получены")
+            randomDelay(0.5, 1.0)
         end)
 
-        -- 6. Создание и запуск матча
-        task.spawn(function()
-            task.wait(3)
-            pcall(function()
-                local lobbyEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("LobbyEvent")
-                lobbyEvent:FireServer("AddMatch", {
-                    Difficulty = "Normal",
-                    Act = "Act1",
-                    StageType = "Story",
-                    Stage = "Stage1",
-                    FriendsOnly = true
-                })
-                print("🎮 Матч добавлен: Act1, Normal")
-                randomDelay(0.3, 0.7)
 
-                lobbyEvent:FireServer("StartMatch")
-                print("🚀 Матч запущен!")
-            end)
+        -- 6. Создание и запуск матча
+        pcall(function()
+            local lobbyEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("LobbyEvent")
+            lobbyEvent:FireServer("AddMatch", {
+                Difficulty = "Normal",
+                Act = "Act1",
+                StageType = "Story",
+                Stage = "Stage1",
+                FriendsOnly = true
+            })
+            print("🎮 Матч добавлен: Act1, Normal")
+            randomDelay(0.3, 0.7)
+
+            lobbyEvent:FireServer("StartMatch")
+            print("🚀 Матч запущен!")
         end)
 
         print("✅ Меню-режим завершён. Ожидаем переход в боёвку...")
@@ -572,5 +560,66 @@ function stopScript()
     getgenv().MatchRestartEnabled = false
     print("🛑 Скрипт остановлен")
 end
+
+coroutine.wrap(function()
+    local player = game:GetService("Players").LocalPlayer
+    local playerGui = player:WaitForChild("PlayerGui")
+
+    -- Проверяем, поддерживается ли Set3dRenderingEnabled
+    if not pcall(function()
+        game:GetService("RunService"):Set3dRenderingEnabled(true)
+    end) then
+        warn("⚠️ Set3dRenderingEnabled не поддерживается на этом сервере")
+        return
+    end
+
+    -- 🎨 Создаём кнопку
+    local button = Instance.new("TextButton")
+    button.Name = "Toggle3DButton"
+    button.Text = "3D: ON"
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.BackgroundColor3 = Color3.new(0, 0.5, 0)
+    button.Size = UDim2.new(0, 120, 0, 40)
+    button.Position = UDim2.new(0.8, 0, 0.9, 0) -- Правый нижний угол
+    button.AnchorPoint = Vector2.new(0.5, 0.5)
+    button.BorderSizePixel = 0
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 14
+    button.Visible = true
+    button.Active = true
+    button.ZIndex = 10
+
+    -- Добавляем в PlayerGui
+    button.Parent = playerGui
+
+    -- 💡 Переменная состояния
+    local isEnabled = true
+
+    -- 🔄 Обработчик нажатия
+    button.MouseButton1Click:Connect(function()
+        isEnabled = not isEnabled
+        game:GetService("RunService"):Set3dRenderingEnabled(isEnabled)
+
+        -- Обновляем внешний вид кнопки
+        if isEnabled then
+            button.Text = "3D: ON"
+            button.BackgroundColor3 = Color3.new(0, 0.5, 0)
+        else
+            button.Text = "3D: OFF"
+            button.BackgroundColor3 = Color3.new(0.7, 0, 0)
+        end
+
+        print(`🎮 3D Rendering: {isEnabled and "ВКЛ" or "ВЫКЛ"}`)
+    end)
+
+    -- 🧹 Очистка при выходе
+    player.CharacterAdded:Connect(function()
+        if button and button.Parent == nil then
+            button:Destroy()
+        end
+    end)
+
+    print("📱 Кнопка '3D Rendering' добавлена (работает на телефоне)")
+end)()
 
 print("🟢 Скрипт загружен. Используй stopScript(), чтобы остановить.")

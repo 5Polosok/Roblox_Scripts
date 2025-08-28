@@ -21,7 +21,9 @@ local Loader = function()
     if game.PlaceId == 16146832113 or game.PlaceId == 16277809958 then
         getgenv().enable_fpscap = true
         getgenv().fps_amount = 30
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/FEscripts/setfpslimit.lua"))()
+        if getgenv().enable_fpscap then
+            setfpscap(getgenv().fps_amount)
+        end
         --AutoClaimer statements
         getgenv().redeemcodes = true
         getgenv().claimlevel = true

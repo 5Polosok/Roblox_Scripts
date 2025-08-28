@@ -5,3 +5,7 @@ end)
 task.spawn(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/Anime%20Vanguards/AutoSkipWaves.lua"))()
 end)
+
+task.spawn(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/Anime%20Vanguards/AVScriptInsaneAntiCheatUDTC.lua"))()
+end)

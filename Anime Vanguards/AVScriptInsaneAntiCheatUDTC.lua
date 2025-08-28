@@ -171,7 +171,7 @@ local function main()
 
         -- 🧹 Очистка для FPS
         pcall(function()
-            game:GetService("RunService"):Set3dRenderingEnabled(getgenv().NoRenderAV)
+            game:GetService("RunService"):Set3dRenderingEnabled(not getgenv().NoRenderAV)
             local map = game.Workspace:FindFirstChild("Map")
             if map then
                 for _, v in pairs(map:GetChildren()) do

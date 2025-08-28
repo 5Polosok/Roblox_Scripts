@@ -1,4 +1,4 @@
-local requiredfunc = "playAnimation"
+local requiredfunc = "canAttackTarget"
 local func
 for _,v in pairs(getgc()) do
     if type(v) == "function" and getinfo(v).name == requiredfunc then

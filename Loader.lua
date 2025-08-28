@@ -2,6 +2,9 @@ local Loader = function()
     --Anime Final Strike
     if game.PlaceId == 16946008847 then
         loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/FEscripts/FPSBoost.lua"))()
+        --AutoRestart Statements
+        getgenv().autorestartafs = true
+        getgenv().WebhookURLSkibidi = "https://discord.com/api/webhooks/983683673754837003/I3cEcRpSuWm11oCLawBAVLl_NyRQzXZp0ds0ZEUdYaEFFztKrSdfbmygSMa28TNRsRvr"        
         --AutoJoiner Statements
         getgenv().TpToEventStatement = true
         getgenv().AmountOfAccounts = 3

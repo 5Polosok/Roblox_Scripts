@@ -55,67 +55,32 @@ local function main()
     local function resetCollectedItems()
         collectedItems = {}
     end
-    local lastEndScreen = nil
-    playerGui.ChildAdded:Connect(function(child)
-        if child.Name == "EndScreen" and child ~= lastEndScreen then
-            lastEndScreen = child
 
-            randomDelay(0.8, 1.2)
-            pcall(sendMatchResult)
-            resetCollectedItems()
+    local function processItemNotification(child)
+        if child.Name ~= "ItemTemplate" or child:GetAttribute("Processed") then return end
+        child:SetAttribute("Processed", true)
 
-            randomDelay(0.8, 1.2)
+        task.delay(0.05, function()
             pcall(function()
-                local voteEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("EndScreen"):WaitForChild("VoteEvent")
-                voteEvent:FireServer("Retry")
-                print("🗳️ Голосуем за реплей")
-            end)
+                local itemFrame = child:FindFirstChild("ItemFrame")
+                local main = itemFrame and itemFrame:FindFirstChild("Main")
+                local nameObj = main and main:FindFirstChild("ItemName")
+                local amountObj = main and main:FindFirstChild("ItemAmount")
+                if not (nameObj and amountObj) then return end
 
-            -- Ждём исчезновения экрана
-            repeat task.wait(0.1) until not child.Parent
-            print("🗑️ Экран завершения закрыт")
+                local name = tostring(nameObj.Text)
+                local amountText = tostring(amountObj.Text)
+                local amount = tonumber(string.match(amountText, "%d+")) or 1
 
-            -- 🔁 Ждём, пока HUD загрузится и волна станет 0/15
-            randomDelay(1.0, 2.0)
-            print("⏳ Ожидаем восстановление интерфейса...")
-
-            local function waitForHUDAndSkip()
-                local maxWait = 30 -- максимум 30 секунд
-                for i = 1, maxWait * 5 do
-                    if not getgenv().MatchRestartEnabled then return end
-
-                    local current, total = getCurrentWave()
-                    if total == 15 and current == 0 then
-                        print("🎯 Волна 0/15 обнаружена — пропускаем...")
-                        fireSkipWaveEvent()
-                        return true
-                    end
-
-                    task.wait(0.2)
+                if not collectedItems[name] then
+                    collectedItems[name] = 0
                 end
-                warn("⏰ Не удалось обнаружить 0/15 в течение 30 секунд")
-            end
+                collectedItems[name] += amount
 
-            -- Запускаем ожидание
-            spawn(waitForHUDAndSkip)
-
-            -- Дополнительно: через 5 секунд — попробуем разместить юнитов, если ещё не начали
-            task.delay(3, function()
-                if getgenv().MatchRestartEnabled and getCurrentWave() == 0 then
-                    print("⚠️ Волна всё ещё 0/15 — принудительно пропускаем...")
-                    fireSkipWaveEvent()
-                end
+                print(`📥 +{amount} {name}`)
             end)
-
-            -- Ещё один резервный скип через 10 сек
-            task.delay(6, function()
-                if getgenv().MatchRestartEnabled and getCurrentWave() == 0 then
-                    print("🚨 Резервный пропуск волны...")
-                    fireSkipWaveEvent()
-                end
-            end)
-        end
-    end)
+        end)
+    end
 
     if placeId == 16146832113 then
         -- 🌞 РЕЖИМ: ЛОББИ (МЕНЮ)
@@ -239,58 +204,30 @@ local function main()
             end)
         end
 
+        -- ✅ МОНИТОРИНГ: Пропуск волны ТОЛЬКО когда GUI "SkipWave" активен
+        spawn(function()
+            print("⏳ Ожидание кнопки SkipWave (GUI-триггер)...")
+            while getgenv().MatchRestartEnabled do
+                local skipGui = playerGui:FindFirstChild("SkipWave")
+
+                if skipGui and skipGui.Enabled == true then
+                    print("🎯 Кнопка SkipWave активна — пропускаем волну!")
+                    fireSkipWaveEvent()
+
+                    -- Избегаем повторного срабатывания
+                    task.wait(3)
+                end
+
+                task.wait(1.5) -- Проверка каждые 1.5 сек
+            end
+        end)
+
         -- 🧩 ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 
         local function isGameActive()
             local hotbar = playerGui:FindFirstChild("Hotbar")
             local endScreen = playerGui:FindFirstChild("EndScreen")
             return hotbar and hotbar.Enabled == true and (not endScreen or not endScreen.Enabled)
-        end
-
-        -- 🔢 Получение текущей волны
-        local function getCurrentWave()
-            local hud = playerGui:FindFirstChild("HUD")
-            if not hud then return 0, 0 end
-
-            local wavesFrame = hud:FindFirstChild("Map")
-            if not wavesFrame then return 0, 0 end
-
-            local contentTextObj = wavesFrame:FindFirstChild("WavesAmount")
-            if not contentTextObj then return 0, 0 end
-
-            local contentText = contentTextObj:FindFirstChild("ContentText")
-            if not contentText or not contentText.Text then return 0, 0 end
-
-            local parts = string.split(contentText.Text, "/")
-            local current = tonumber(parts[1]) or 0
-            local total = tonumber(parts[2]) or 0
-
-            return current, total
-        end
-
-        -- ✅ Проверка на 0/15
-        spawn(function()
-            print("🔍 Мониторинг волны: ожидание 0/15...")
-            while getgenv().MatchRestartEnabled do
-                local current, total = getCurrentWave()
-                if total == 15 and current == 0 then
-                    print("🎯 Обнаружена волна 0/15 — автоматически пропускаем...")
-                    fireSkipWaveEvent()
-                end
-                task.wait(2) -- Проверка каждые 2 секунды
-            end
-        end)
-
-        local function waitForWaveStart()
-            print("⏳ Ожидаем начало волны...")
-            while getgenv().MatchRestartEnabled do
-                local current, total = getCurrentWave()
-                if isGameActive() and current > 0 then
-                    print("🔥 Волна началась!")
-                    break
-                end
-                task.wait(1)
-            end
         end
 
         local function getPlayerMoney()
@@ -650,22 +587,12 @@ local function main()
                 repeat task.wait(0.1) until not child.Parent
                 print("🗑️ Экран завершения закрыт")
 
-                randomDelay(0.8, 1.2)
-                waitForWaveStart()
-
-                randomDelay(0.8, 1.2)
-                deployAllUnits()
-
-                randomDelay(0.8, 1.2)
-                fireSkipWaveEvent()
+                -- Ждём немного перед следующими действиями
+                randomDelay(1.0, 2.0)
             end
         end)
 
         -- 🚀 Старт
-        fireSkipWaveEvent()
-        waitForWaveStart()
-        deployAllUnits()
-
         print("✅ Автоматизация запущена")
     else
         warn("❌ Неподдерживаемая игра:", placeId)

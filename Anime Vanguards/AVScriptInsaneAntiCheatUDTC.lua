@@ -212,27 +212,45 @@ local function main()
             return hotbar and hotbar.Enabled == true and (not endScreen or not endScreen.Enabled)
         end
 
-        local function isWaveActive()
+        -- 🔢 Получение текущей волны
+        local function getCurrentWave()
             local hud = playerGui:FindFirstChild("HUD")
-            if not hud then return false end
+            if not hud then return 0, 0 end
 
             local wavesFrame = hud:FindFirstChild("Map")
-            if not wavesFrame then return false end
+            if not wavesFrame then return 0, 0 end
 
             local contentTextObj = wavesFrame:FindFirstChild("WavesAmount")
-            if not contentTextObj then return false end
+            if not contentTextObj then return 0, 0 end
 
             local contentText = contentTextObj:FindFirstChild("ContentText")
-            if not contentText or not contentText.Text then return false end
+            if not contentText or not contentText.Text then return 0, 0 end
 
-            local currentWave = tonumber((string.split(contentText.Text, "/"))[1]) or 0
-            return currentWave > 0
+            local parts = string.split(contentText.Text, "/")
+            local current = tonumber(parts[1]) or 0
+            local total = tonumber(parts[2]) or 0
+
+            return current, total
         end
+
+        -- ✅ Проверка на 0/15
+        spawn(function()
+            print("🔍 Мониторинг волны: ожидание 0/15...")
+            while getgenv().MatchRestartEnabled do
+                local current, total = getCurrentWave()
+                if total == 15 and current == 0 then
+                    print("🎯 Обнаружена волна 0/15 — автоматически пропускаем...")
+                    fireSkipWaveEvent()
+                end
+                task.wait(2) -- Проверка каждые 2 секунды
+            end
+        end)
 
         local function waitForWaveStart()
             print("⏳ Ожидаем начало волны...")
             while getgenv().MatchRestartEnabled do
-                if isGameActive() and isWaveActive() then
+                local current, total = getCurrentWave()
+                if isGameActive() and current > 0 then
                     print("🔥 Волна началась!")
                     break
                 end
@@ -577,34 +595,33 @@ local function main()
             end
         end)()
 
-        -- Обработка конца матча (с рандомными задержками)
+        -- Обработка конца матча
         local lastEndScreen = nil
         playerGui.ChildAdded:Connect(function(child)
             if child.Name == "EndScreen" and child ~= lastEndScreen then
                 lastEndScreen = child
 
-                randomDelay(0.8, 1.2)  -- Отправка вебхука
+                randomDelay(0.8, 1.2)
                 pcall(sendMatchResult)
                 resetCollectedItems()
 
-                randomDelay(0.8, 1.2)  -- Голосование за ретрай
+                randomDelay(0.8, 1.2)
                 pcall(function()
                     local voteEvent = game.ReplicatedStorage:WaitForChild("Networking"):WaitForChild("EndScreen"):WaitForChild("VoteEvent")
                     voteEvent:FireServer("Retry")
                     print("🗳️ Голосуем за реплей")
                 end)
 
-                -- Ждём исчезновения экрана
                 repeat task.wait(0.1) until not child.Parent
                 print("🗑️ Экран завершения закрыт")
 
-                randomDelay(0.8, 1.2)  -- Ожидание волны
+                randomDelay(0.8, 1.2)
                 waitForWaveStart()
 
-                randomDelay(0.8, 1.2)  -- Расстановка
+                randomDelay(0.8, 1.2)
                 deployAllUnits()
 
-                randomDelay(0.8, 1.2)  -- Пропуск волны
+                randomDelay(0.8, 1.2)
                 fireSkipWaveEvent()
             end
         end)

@@ -3,8 +3,6 @@ local Loader = function()
     if game.PlaceId == 16946008847 then
         loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/FEscripts/FPSBoost.lua"))()
         --AutoRestart Statements
-        getgenv().autorestartafs = true
-        getgenv().WebhookURLSkibidi = "https://discord.com/api/webhooks/983683673754837003/I3cEcRpSuWm11oCLawBAVLl_NyRQzXZp0ds0ZEUdYaEFFztKrSdfbmygSMa28TNRsRvr"     
            
         --AutoJoiner Statements
         getgenv().TpToEventStatement = true
@@ -16,7 +14,6 @@ local Loader = function()
         getgenv().RedeemCodes = true 
         --loadstring
         loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/Anime%20Final%20Strike/AnimeFinalStrikeloader.lua"))()
-        task.wait(1)
         return 
     end
 
@@ -31,7 +28,6 @@ local Loader = function()
         
         --loadstring
         loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/Anime%20Vanguards/AVScriptLoader.lua"))()
-        task.wait(1)
         return 
     end
 
@@ -41,7 +37,6 @@ local Loader = function()
         getgenv().UseParser = false
         --loadstring
         loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/ASTDX/ASTDXLoader.lua"))()
-        task.wait(1)
         return
     end
 end
@@ -49,8 +44,9 @@ end
 task.spawn(function()
     if not game:IsLoaded() then
         game.Loaded:Wait()
+    else
+        print("SKIBIDI LOADED")
     end
     task.wait(1)
-    
     Loader()
 end)

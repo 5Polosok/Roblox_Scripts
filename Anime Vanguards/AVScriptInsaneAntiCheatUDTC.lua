@@ -2,7 +2,7 @@
 if not getgenv then
     return warn("Скрипт работает только в среде с getgenv (Synapse X, Krnl)")
 end
-if not getgenv().AVKaitun then return end
+if not getgenv().FarmAltsFunpay then return end
 
 -- ⚙️ Глобальные настройки
 getgenv().days_amount = 3

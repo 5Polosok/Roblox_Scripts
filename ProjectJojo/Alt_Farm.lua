@@ -26,7 +26,14 @@ local function sendChatMessage(message)
         end
     end)
 end
-
+task.spawn(function()
+    local vu = game:GetService("VirtualUser")
+    player.Idled:Connect(function()
+        vu:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+        task.wait(1)
+        vu:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+    end)
+end)
 -- === Получить все инструменты из инвентаря ===
 local function getAllTools()
     local tools = {}

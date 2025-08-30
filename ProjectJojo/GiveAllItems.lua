@@ -8,14 +8,6 @@ local GIVE_COMMAND = "!giveitem " .. TARGET_PLAYER_NAME
 local DELAY_BETWEEN_ITEMS = 0.8  -- Минимальная задержка между предметами
 local CHECK_INTERVAL = 3        -- Как часто проверять игрока
 -- =====================
-task.spawn(function()
-    local vu = game:GetService("VirtualUser")
-    player.Idled:Connect(function()
-        vu:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-        task.wait(1)
-        vu:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-    end)
-end)
 -- Отправка через TextChatService (с попыткой разных каналов)
 local function sendChatMessage(message)
     local channels = {"RBXGeneral", "Team", "All"}

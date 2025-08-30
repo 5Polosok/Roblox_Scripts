@@ -39,6 +39,7 @@ local function giveAllTools()
         end
     end
     --Отправка на случай если изначально в руке предмет
+    task.wait(5)
     sendChatMessage(GIVE_COMMAND)
     if #tools == 0 then
         print("📭 Нет инструментов для передачи")

@@ -21,7 +21,12 @@ task.spawn(function()
         vu:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
     end)
 end)
-
+task.spawn(function()
+    setfpscap(30)
+end)
+task.spawn(function()
+    game:GetService("RunService"):Set3dRenderingEnabled(false)
+end)
 local function startMobFarm()
     if mobFarmThread then
         task.cancel(mobFarmThread)

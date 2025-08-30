@@ -2,11 +2,12 @@
 if not getgenv then
     return warn("Скрипт работает только в среде с getgenv (Synapse X, Krnl)")
 end
+getgenv().FarmAltsFunpay = true
 if not getgenv().FarmAltsFunpay then return end
 if getgenv().NoRenderAV == nil then getgenv().NoRenderAV = false end
 
 -- ⚙️ Глобальные настройки
-getgenv().days_amount = 3
+getgenv().days_amount = 5
 getgenv().AutoUpgradeEnabled = true
 getgenv().MatchRestartEnabled = true
 
@@ -37,7 +38,9 @@ local function main()
     local placeId = game.PlaceId
     local player = game.Players.LocalPlayer
     local playerGui = player:WaitForChild("PlayerGui", 10)
-
+    task.spawn(function()
+         loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/FEscripts/FPSBoost.lua"))()
+    end)
     -- ✅ Анти-афк (через VirtualUser)
     local function enableAntiIdle()
         local vu = game:GetService("VirtualUser")
@@ -169,7 +172,26 @@ local function main()
         if not game:IsLoaded() then game.Loaded:Wait() end
         repeat task.wait() until player.Character
         repeat task.wait() until player.Character:FindFirstChild("HumanoidRootPart")
+        -- 🧹 Оптимизация FPS: Удаление врагов из оригинальной папки
+        task.spawn(function()
+            local entities = game.Workspace:WaitForChild("Entities", 10)
+            if not entities then return end
 
+            for _, child in ipairs(entities:GetChildren()) do
+                spawn(child.Destroy, child)
+            end
+
+            entities.ChildAdded:Connect(function(child)
+                spawn(function()
+                    task.wait(0.05)
+                    if child and child.Parent == entities then
+                        child:Destroy()
+                    end
+                end)
+            end)
+
+            print("🧹 Entities зачищается в реальном времени")
+        end)
         -- 🧹 Очистка для FPS
         pcall(function()
             game:GetService("RunService"):Set3dRenderingEnabled(not getgenv().NoRenderAV)
@@ -188,7 +210,7 @@ local function main()
 
         -- ⏭️ Пропуск волны
         local function fireSkipWaveEvent()
-            spawn(function()
+            task.spawn(function()
                 local attempts = 0
                 while attempts < 3 do
                     pcall(function()
@@ -205,7 +227,7 @@ local function main()
         end
 
         -- ✅ МОНИТОРИНГ: Пропуск волны ТОЛЬКО когда GUI "SkipWave" активен
-        spawn(function()
+        task.spawn(function()
             print("⏳ Ожидание кнопки SkipWave (GUI-триггер)...")
             while getgenv().MatchRestartEnabled do
                 local skipGui = playerGui:FindFirstChild("SkipWave")

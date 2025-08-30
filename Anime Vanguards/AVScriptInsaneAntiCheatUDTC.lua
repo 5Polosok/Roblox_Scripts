@@ -7,7 +7,7 @@ if not getgenv().FarmAltsFunpay then return end
 if getgenv().NoRenderAV == nil then getgenv().NoRenderAV = false end
 
 -- ⚙️ Глобальные настройки
-getgenv().days_amount = 5
+getgenv().days_amount = 7
 getgenv().AutoUpgradeEnabled = true
 getgenv().MatchRestartEnabled = true
 

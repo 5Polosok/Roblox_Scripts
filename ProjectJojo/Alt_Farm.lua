@@ -132,37 +132,42 @@ end)
 -- === Отправка вебхука каждые 30 минут (task.spawn) ===
 task.spawn(function()
     while true do
-        local backpack = LocalPlayer:FindFirstChild("Backpack")
-        local character = LocalPlayer.Character
+        task.wait(30 * 60) -- каждые 30 минут
+
+        local player = game.Players.LocalPlayer
+        local backpack = player:FindFirstChild("Backpack")
+        local character = player.Character
         local timeText = "N/A"
 
-        -- Получаем время
-        local statUI = LocalPlayer:FindFirstChild("PlayerGui")
-            and LocalPlayer.PlayerGui:FindFirstChild("statUI")
+        -- Получаем время из GUI
+        local statUI = player:FindFirstChild("PlayerGui") and player.PlayerGui:FindFirstChild("statUI")
         if statUI and statUI:FindFirstChild("time") then
             timeText = statUI.time.Text
         end
 
-        -- Сбор инвентаря
+        -- Сбор инвентаря: и из Backpack, и из Character
         local inventory = {}
-        local function countTools(parent)
-            if not parent then return end
-            for _, tool in ipairs(parent:GetChildren()) do
-                if tool:IsA("Tool") then
-                    inventory[tool.Name] = (inventory[tool.Name] or 0) + 1
+
+        local function countTools(container)
+            if not container then return end
+            for _, item in ipairs(container:GetChildren()) do
+                if item:IsA("Tool") then
+                    inventory[item.Name] = (inventory[item.Name] or 0) + 1
                 end
             end
         end
 
         countTools(backpack)
-        countTools(character)
+        countTools(character) -- ✅ Теперь учитываем инструменты в персонаже
 
-        -- Формируем список
+        -- Формируем список для вебхука
         local itemsList = ""
         for item, count in pairs(inventory) do
             itemsList = itemsList .. string.format("**%s** ×%d\n", item, count)
         end
-        if itemsList == "" then itemsList = "*Пусто*" end
+        if itemsList == "" then
+            itemsList = "*Пусто*"
+        end
 
         -- 📬 Отправка вебхука (в стиле твоего автостенд-скрипта)
         local function sendWebhook()
@@ -171,7 +176,7 @@ task.spawn(function()
 
             local embed = {
                 title = "📊 30-минутный отчёт",
-                description = "**" .. LocalPlayer.Name .. "** — статистика инвентаря",
+                description = "**" .. player.Name .. "** — статистика инвентаря",
                 fields = {
                     {
                         name = "⏰ Игровое время",
@@ -188,13 +193,13 @@ task.spawn(function()
                 timestamp = os.date("!%Y-%m-%dT%H:%M:%S.000Z"),
                 footer = { text = "Auto Report System" },
                 author = {
-                    name = "Игрок: " .. LocalPlayer.Name,
-                    icon_url = "https://www.roblox.com/headshot-thumbnail/image?userId="..LocalPlayer.UserId.."&width=420&height=420&format=png"
+                    name = "Игрок: " .. player.Name,
+                    icon_url = "https://www.roblox.com/headshot-thumbnail/image?userId="..player.UserId.."&width=420&height=420&format=png"
                 }
             }
 
             local data = { embeds = { embed } }
-            local body = HttpService:JSONEncode(data)
+            local body = game:GetService("HttpService"):JSONEncode(data)
 
             pcall(function()
                 httpRequest({
@@ -207,7 +212,6 @@ task.spawn(function()
         end
 
         sendWebhook()
-        task.wait(30 * 60)
     end
 end)
 

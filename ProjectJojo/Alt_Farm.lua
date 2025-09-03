@@ -105,30 +105,6 @@ task.spawn(function()
     end
 end)
 
--- === Подбор MoneyBag (task.spawn) ===
-task.spawn(function()
-    while task.wait(getgenv().pickupCooldown) do
-        if not getgenv().pickupEnabled then
-            task.wait(1)
-            continue
-        end
-
-        for _, obj in ipairs(Workspace:GetDescendants()) do
-            if obj.Name == "MoneyBag" then
-                local cd = obj:FindFirstChild("ClickDetector")
-                local pp = obj:FindFirstChild("ProximityPrompt")
-
-                if cd then
-                    pcall(fireclickdetector, cd)
-                elseif pp then
-                    pcall(fireproximityprompt, pp)
-                end
-            end
-        end
-
-    end
-end)
-
 -- === Отправка вебхука каждые 30 минут (task.spawn) ===
 task.spawn(function()
     while true do

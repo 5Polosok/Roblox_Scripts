@@ -23,6 +23,9 @@ local player = game.Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
+-- 🔧 Вебхук
+getgenv().webhook_url_autostand = getgenv().webhook_url_autostand or "ВАШ_ВЕБХУК_ЗДЕСЬ"
+
 -- 🔧 Включить/выключить уведомления
 getgenv().enable_webhook = getgenv().enable_webhook ~= false
 
@@ -73,7 +76,7 @@ end
 -- 🌐 Отправка вебхука в Discord (совместимо с эксплойтами)
 local function sendWebhook(standName)
     if not getgenv().enable_webhook then return end
-    if not getgenv().webhook_url or string.find(getgenv().webhook_url, "webhooks") == nil then
+    if not getgenv().webhook_url_autostand or string.find(getgenv().webhook_url_autostand, "webhooks") == nil then
         warn("[Вебхук] ⚠️ Вебхук не настроен или неверный URL.")
         return
     end
@@ -121,7 +124,7 @@ local function sendWebhook(standName)
 
     local success, response = pcall(function()
         return httpRequestFunction({
-            Url = getgenv().webhook_url,
+            Url = getgenv().webhook_url_autostand,
             Method = "POST",
             Headers = { ["Content-Type"] = "application/json" },
             Body = body

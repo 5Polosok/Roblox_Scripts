@@ -132,7 +132,6 @@ end)
 -- === Отправка вебхука каждые 30 минут (task.spawn) ===
 task.spawn(function()
     while true do
-        task.wait(30 * 60) -- каждые 30 минут
 
         local player = game.Players.LocalPlayer
         local backpack = player:FindFirstChild("Backpack")
@@ -212,6 +211,8 @@ task.spawn(function()
         end
 
         sendWebhook()
+
+        task.wait(30 * 60) -- каждые 30 минут
     end
 end)
 

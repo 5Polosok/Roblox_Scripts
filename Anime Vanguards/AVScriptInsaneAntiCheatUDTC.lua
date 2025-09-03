@@ -31,7 +31,9 @@ local function randomDelay(min, max)
     task.wait(delay)
     return delay
 end
-
+task.spawn(function()
+    setfpscap(30)
+end)
 -- ⚙️ ОСНОВНАЯ ЛОГИКА
 local function main()
     local placeId = game.PlaceId

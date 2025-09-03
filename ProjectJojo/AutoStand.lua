@@ -23,9 +23,6 @@ local player = game.Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
--- 🔧 Вебхук
-getgenv().webhook_url_autostand = getgenv().webhook_url_autostand or "ВАШ_ВЕБХУК_ЗДЕСЬ"
-
 -- 🔧 Включить/выключить уведомления
 getgenv().enable_webhook = getgenv().enable_webhook ~= false
 

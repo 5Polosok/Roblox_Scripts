@@ -7,11 +7,10 @@ getgenv().pickupCooldown = 0.25          -- Задержка между подб
 -- === Сервисы ===
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 
 -- === Функция: фарм мобов ===
 local mobFarmThread = nil
-
+local LocalPlayer = Players.LocalPlayer
 task.spawn(function()
     local vu = game:GetService("VirtualUser")
     LocalPlayer.Idled:Connect(function()
@@ -21,7 +20,7 @@ task.spawn(function()
     end)
 end)
 task.spawn(function()
-    setfpscap(30)
+    setfpscap(60)
 end)
 task.spawn(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/FEscripts/FPSBoost.lua"))()

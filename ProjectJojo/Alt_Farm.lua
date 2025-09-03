@@ -23,9 +23,9 @@ task.spawn(function()
 end)
 
 -- === FPS Boost (task.spawn) ===
--- task.spawn(function()
---     loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/FEscripts/FPSBoost.lua"))()
--- end)
+task.spawn(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/5Polosok/Roblox_Scripts/refs/heads/main/FEscripts/FPSBoost.lua"))()
+end)
 
 -- === Фарм мобов (task.spawn) ===
 task.spawn(function()

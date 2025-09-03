@@ -3,7 +3,7 @@ getgenv().protected_stands = getgenv().protected_stands or {
     "gold", "wonder", "tusk", "d4"
 }
 getgenv().if_send_webhook = {
-    "gold", "wonder", "tusk", "d4", "cream", "star", "world", "whitesnake", "kingcrimson", "killerqueen"
+    "gold", "wonder", "tusk", "d4c", "cream", "starplatinum", "theworld", "whitesnake", "kingcrimson", "killerqueen"
 }
 
 -- 🔍 Проверка: является ли Stand нужным
@@ -72,7 +72,6 @@ local function ensureItem(itemName)
     task.wait(1)
 end
 
--- 🌐 Отправка вебхука в Discord
 -- 🌐 Отправка вебхука в Discord (совместимо с эксплойтами)
 local function sendWebhook(standName)
     if not getgenv().enable_webhook then return end
@@ -80,7 +79,7 @@ local function sendWebhook(standName)
         warn("[Вебхук] ⚠️ Вебхук не настроен или неверный URL.")
         return
     end
-    -- Сделать проверку есть ли standName в списке через string.find
+    -- Проверка: есть ли в списке для отправки
     local shouldSend = false
     for _, name in ipairs(getgenv().if_send_webhook) do
         if string.find(string.lower(standName), string.lower(name)) then
@@ -88,7 +87,6 @@ local function sendWebhook(standName)
             break
         end
     end
-    -- Проверка нужно ли отправлять вебхук для этого стенда
     if not shouldSend then
         print("[Вебхук] ℹ️ Stand '" .. standName .. "' не в списке для отправки вебхука. Пропускаем.")
         return
@@ -119,7 +117,6 @@ local function sendWebhook(standName)
     local data = { embeds = { embed } }
     local body = HttpService:JSONEncode(data)
 
-    -- Определяем, какую функцию использовать
     local httpRequestFunction = http_request or (syn and syn.request) or request
 
     local success, response = pcall(function()
@@ -202,19 +199,22 @@ local function tryObtainStand()
     isProcessing = true
     print("[Получение] ✅ Отправляю luckyarrowevent...")
 
-    -- Сохраняем старое значение
     local oldStand = stand.Value
+    local attemptCompleted = false  -- 🔐 Защита от двойного вызова в рамках одной попытки
 
     pcall(function()
         luckyarrowevent:InvokeServer(luckyArrow, player.Character, 0)
     end)
 
-    -- Через 1.2 сек проверяем, изменился ли Stand
     task.delay(1.2, function()
-        if stand.Value ~= "None" and stand.Value ~= oldStand and not isProtectedStand(stand.Value) then
-            print("[Вебхук] 🎉 Новый стенд получен: " .. stand.Value)
-            sendWebhook(stand.Value)
-        end
+        if attemptCompleted then return end
+        if stand.Value == "None" then return end
+        if stand.Value == oldStand then return end
+        if isProtectedStand(stand.Value) then return end
+
+        print("[Вебхук] 🎉 Новый стенд получен: " .. stand.Value)
+        attemptCompleted = true
+        sendWebhook(stand.Value)
     end)
 
     print("[Получение] 🔔 Команда отправлена.")
@@ -244,7 +244,8 @@ player.Stand.Changed:Connect(function()
 
         if stand.Value == "None" then
             print("[Event] 🔄 Stand сброшен — можно получить новый.")
-            task.delay(1.5, tryObtainStand)
+            -- ❌ УДАЛЕНО: task.delay(1.5, tryObtainStand)
+            -- Чтобы избежать дублирования с onCharacterReady()
         end
     end)
 end)

@@ -71,7 +71,7 @@ print(`🔍 Ожидание захода игрока: {TARGET_PLAYER_NAME}`)
 
 local wasPresent = false  -- Флаг: был ли игрок в прошлой проверке
 
-while true do
+while task.wait(CHECK_INTERVAL) do
     local targetPlayer = Players:FindFirstChild(TARGET_PLAYER_NAME)
     local isPresent = targetPlayer ~= nil
 
@@ -84,6 +84,4 @@ while true do
     -- Обновляем состояние
     wasPresent = isPresent
 
-    -- Проверяем каждые CHECK_INTERVAL секунд
-    task.wait(CHECK_INTERVAL)
 end

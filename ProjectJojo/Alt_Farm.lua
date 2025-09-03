@@ -3,7 +3,6 @@ getgenv().mobFarmEnabled = true
 getgenv().killplayers = false
 getgenv().pickupEnabled = true
 getgenv().pickupCooldown = 0.25
-getgenv().webhook_url_report = "https://discord.com/api/webhooks/1279195149775409163/7wgJt9UIJmhCTZooeYonVMtYe1DsCRBLJgI-536_lH7fb7C3M3E3i3BIoeEm41D_Xozu" -- для отчётов
 
 -- === Сервисы ===
 local Workspace = game:GetService("Workspace")
@@ -133,8 +132,6 @@ end)
 -- === Отправка вебхука каждые 30 минут (task.spawn) ===
 task.spawn(function()
     while true do
-        task.wait(30 * 60) -- 30 минут
-
         local backpack = LocalPlayer:FindFirstChild("Backpack")
         local character = LocalPlayer.Character
         local timeText = "N/A"
@@ -210,6 +207,7 @@ task.spawn(function()
         end
 
         sendWebhook()
+        task.wait(30 * 60)
     end
 end)
 

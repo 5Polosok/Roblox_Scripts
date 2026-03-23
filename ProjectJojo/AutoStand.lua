@@ -1,6 +1,6 @@
 -- 🔧 НАСТРОЙКИ
 getgenv().protected_stands = getgenv().protected_stands or {
-    "gold", "wonder", "tusk", "d4", "mandom"
+    "gold", "wonder", "tusk", "d4", "emperor"
 }
 
 getgenv().if_send_webhook = {

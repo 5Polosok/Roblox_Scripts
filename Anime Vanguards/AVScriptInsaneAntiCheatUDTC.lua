@@ -350,7 +350,7 @@ local function main()
             end)
 
             if isUnitAtExactPosition(pos, 2.0) then
-                print(`✅ Юнит {index} поставлен (точно)`)
+                print(`Юнит {index} поставлен (точно)`)
                 moveToPosition(pos)
                 task.wait(0.5)
                 return true

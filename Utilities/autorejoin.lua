@@ -75,5 +75,3 @@ task.spawn(function()
         task.wait(1)
     end
 end)
-
-Как сделать тут меньше минут
